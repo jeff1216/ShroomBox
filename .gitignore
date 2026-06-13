@@ -22,6 +22,9 @@ fruitbox_ppo_final/
 # Watch callback temp models
 fruitbox_watch_*.zip
 
+# User data
+fruitbox_stats.json
+
 # OS
 .DS_Store
 Thumbs.db
