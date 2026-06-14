@@ -323,20 +323,7 @@ class FruitBoxPygame:
                     if not self.game_over and not self.game.paused:
                         bounds = self.selection_bounds()
                         if bounds:
-                            r1, c1, r2, c2 = bounds
-                            _, no_moves = self.game.apply_move(r1, c1, r2, c2)
-                            if no_moves:
-                                self.game_over   = True
-                                self.over_reason = "No more valid moves"
-                                if not self._result_recorded:
-                                    fruitbox_stats.record(fruitbox_stats.GameInfo(
-                                        gamemode="single_player",
-                                        grid_type=self.game.grid_type,
-                                        self_score=self.game.score,
-                                        time_elapsed=time.time() - self._game_start,
-                                        seed=self.game.seed,
-                                    ))
-                                    self._result_recorded = True
+                            self.game.apply_move(*bounds)
                     self.drag_start = None
                     self.drag_end   = None
 

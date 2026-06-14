@@ -413,23 +413,12 @@ class FruitBoxVs:
 
                 if timed_out:
                     self.human_over = self.ai_over = True
-
-                now = time.time()
-
-                if not self.ai_over and not self.human_game.paused and now >= self.last_ai_move:
-                    self.last_ai_move = now + AI_INTERVAL
-                    self._step_ai()
-
-                if now >= self.ai_sel_clear_at:
-                    self.ai_drag_start = self.ai_drag_end = None
-
-                if self.human_over and self.ai_over:
                     self.game_over = True
                     h, a = self.human_game.score, self.ai_game.score
                     opp  = "Solver" if self.opponent == "solver" else "RL Model"
-                    if   h > a: self.over_reason = f"You win!  {h} – {a}"; result = "win"
-                    elif a > h: self.over_reason = f"{opp} wins!  {h} – {a}"; result = "loss"
-                    else:       self.over_reason = f"Tie!  {h} – {a}"; result = "tie"
+                    if   h > a: self.over_reason = f"You win!  {h} – {a}"
+                    elif a > h: self.over_reason = f"{opp} wins!  {h} – {a}"
+                    else:       self.over_reason = f"Tie!  {h} – {a}"
                     if not self._result_recorded:
                         fruitbox_stats.record(fruitbox_stats.GameInfo(
                             gamemode="vs_ai",
@@ -441,6 +430,15 @@ class FruitBoxVs:
                         ))
                         self.stats = fruitbox_stats.get_vs_stats()
                         self._result_recorded = True
+
+                now = time.time()
+
+                if not self.ai_over and not self.human_game.paused and now >= self.last_ai_move:
+                    self.last_ai_move = now + AI_INTERVAL
+                    self._step_ai()
+
+                if now >= self.ai_sel_clear_at:
+                    self.ai_drag_start = self.ai_drag_end = None
 
             self.screen.fill(BG)
             self._draw_hud()
