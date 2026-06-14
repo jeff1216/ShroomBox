@@ -1,9 +1,20 @@
 import sqlite3
 import uuid
 import os
+import sys
 from dataclasses import dataclass
 
-_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fruitbox_stats.db")
+
+def _stats_db_path() -> str:
+    if getattr(sys, "frozen", False):
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+        data_dir = os.path.join(base, "FruitBox")
+        os.makedirs(data_dir, exist_ok=True)
+        return os.path.join(data_dir, "fruitbox_stats.db")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "fruitbox_stats.db")
+
+
+_PATH = _stats_db_path()
 
 
 @dataclass(frozen=True, slots=True)
