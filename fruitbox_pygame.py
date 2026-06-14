@@ -43,7 +43,10 @@ BTN_COLOR        = (210, 208, 200)
 BTN_HOVER_COLOR  = (190, 188, 180)
 BTN_BORDER_COLOR = (160, 158, 150)
 
-_THEME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "theme.json")
+_THEME = os.path.join(
+    getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))),
+    "theme.json",
+)
 
 # HUD button layout
 _BTN_H  = 26

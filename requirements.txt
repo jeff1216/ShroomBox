@@ -1,7 +1,7 @@
 # Runtime: game, training, and AI modes
 gymnasium
 numpy
-pygame
+pygame-ce
 pygame_gui
 sb3-contrib
 stable-baselines3
