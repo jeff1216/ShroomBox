@@ -85,6 +85,8 @@ jobs:
           python -m PyInstaller --onefile --windowed --name FruitBox `
             --add-data "fruitbox_ppo_final.zip;." `
             --add-data "theme.json;." `
+            --add-data "theme_dark.json;." `
+            --add-data "assets;assets" `
             --collect-data pygame_gui `
             --collect-data stable_baselines3 `
             --collect-data sb3_contrib `

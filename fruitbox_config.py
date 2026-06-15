@@ -1,8 +1,19 @@
 import json
 import os
+import sys
 import pygame
 
-_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
+
+def _settings_path() -> str:
+    if getattr(sys, "frozen", False):
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+        data_dir = os.path.join(base, "FruitBox")
+        os.makedirs(data_dir, exist_ok=True)
+        return os.path.join(data_dir, "settings.json")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
+
+
+_PATH = _settings_path()
 
 _DEFAULTS: dict[str, int] = {
     "key_pause":  pygame.K_SPACE,
