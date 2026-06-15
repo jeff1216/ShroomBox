@@ -31,7 +31,7 @@ _CARD_Y = 240
 _TOP_BTN_Y = 14
 
 # gear icon dimensions for custom pill
-_GEAR_SZ  = 18
+_GEAR_SZ  = 22
 _GEAR_GAP = 8
 
 
@@ -60,13 +60,13 @@ class _CustomOverlay:
 
     def _build_ui(self):
         card_w  = 440
-        card_h  = 280
+        card_h  = 300
         cx      = (MENU_W - card_w) // 2
         cy      = (MENU_H - card_h) // 2
         pad     = 32
         field_h = 30
         right_x = cx + card_w - pad
-        y       = cy + 80
+        y       = cy + 100
         row_gap = 48
 
         self.ui = pygame_gui.UIManager((MENU_W, MENU_H), get_theme())
@@ -169,7 +169,7 @@ class _CustomOverlay:
         dim.fill(C["DIM"])
         screen.blit(dim, (0, 0))
 
-        card_w, card_h = 440, 280
+        card_w, card_h = 440, 300
         cx = (w - card_w) // 2
         cy = (h - card_h) // 2
         self._card_rect = pygame.Rect(cx, cy, card_w, card_h)
@@ -177,7 +177,10 @@ class _CustomOverlay:
         pygame.draw.rect(screen, C["CARD_BORDER"], self._card_rect, width=1, border_radius=14)
 
         title = self._font_title.render("Custom Mode", True, C["TEXT_PRIMARY"])
-        screen.blit(title, (cx + (card_w - title.get_width()) // 2, cy + 22))
+        screen.blit(title, (cx + (card_w - title.get_width()) // 2, cy + 18))
+
+        note = self._font_label.render("Scores will not be counted towards highscore", True, C["TEXT_SECONDARY"])
+        screen.blit(note, (cx + (card_w - note.get_width()) // 2, cy + 56))
 
         x_surf = self._font_btn.render("X", True, C["TEXT_SECONDARY"])
         x_pad  = 6
@@ -189,7 +192,7 @@ class _CustomOverlay:
         screen.blit(x_surf, (self.close_rect.x + x_pad, self.close_rect.y + x_pad))
 
         pad     = 32
-        y       = cy + 80
+        y       = cy + 100
         row_gap = 48
         pygame.draw.line(screen, C["DIVIDER"], (cx + pad, y - 22), (cx + card_w - pad, y - 22))
 
@@ -491,7 +494,8 @@ class FruitBoxMenu:
                 game.reset()
                 screen = self._resize_keep_top(GAME_W, GAME_H)
             _gamemode = "Custom" if self.grid_type == "custom" else "single_player"
-            FruitBoxPygame(game=game, screen=screen, gamemode=_gamemode).run()
+            _rseed    = _s["seed"] if self.grid_type == "custom" else None
+            FruitBoxPygame(game=game, screen=screen, gamemode=_gamemode, restart_seed=_rseed).run()
             self.screen = self._resize_keep_top(MENU_W, MENU_H)
 
         elif mode == "vs_ai":
