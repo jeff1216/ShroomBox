@@ -10,6 +10,7 @@ from sb3_contrib.common.wrappers import ActionMasker
 
 from fruitbox_env import FruitBoxEnv
 import fruitbox_colors
+import fruitbox_config
 from fruitbox_pygame import (
     FPS, CELL, PADDING, HUD_H, COLS, ROWS, WIN_W, WIN_H,
     get_theme, _ASSETS,
@@ -209,7 +210,7 @@ class FruitBoxAiWatch:
                         self.reset()
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key == fruitbox_config.get("key_menu"):
                         return
                     if event.key == pygame.K_r:
                         self.reset()

@@ -310,7 +310,7 @@ class FruitBoxPygame:
                         self.drag_start = self.drag_end = None
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key == fruitbox_config.get("key_menu"):
                         return
                     if event.key == fruitbox_config.get("key_restart"):
                         self.restart()

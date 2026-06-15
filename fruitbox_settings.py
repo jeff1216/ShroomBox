@@ -5,6 +5,7 @@ import fruitbox_colors
 _BINDINGS = [
     ("key_pause",   "Pause"),
     ("key_restart", "Restart"),
+    ("key_menu",    "Menu"),
 ]
 
 
@@ -74,7 +75,7 @@ class SettingsOverlay:
         dim.fill(C["DIM"])
         screen.blit(dim, (0, 0))
 
-        card_w, card_h = 380, 240
+        card_w, card_h = 380, 272
         cx = (w - card_w) // 2
         cy = (h - card_h) // 2
         self._card_rect = pygame.Rect(cx, cy, card_w, card_h)

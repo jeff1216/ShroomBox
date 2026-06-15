@@ -397,7 +397,7 @@ class FruitBoxVs:
                             self.last_ai_move = time.time() + AI_INTERVAL
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key == fruitbox_config.get("key_menu"):
                         return
                     if event.key == fruitbox_config.get("key_restart"):
                         self.reset()
