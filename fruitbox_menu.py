@@ -115,7 +115,6 @@ class FruitBoxMenu:
         # grid type selector
         gt_cy = _CARD_Y + _CARD_H + 60
 
-        label_surf = self.font_toggle.render("Grid Type", True, TEXT_SECONDARY)
         pill_surf  = self.font_toggle.render(self.grid_type.capitalize(), True, ACCENT)
         pill_pad_x, pill_pad_y = 20, 8
         pill_w = max(pill_surf.get_width() + pill_pad_x * 2, 140)
@@ -126,14 +125,8 @@ class FruitBoxMenu:
         arr_click_w = arr_l.get_width() + 24
         spacing     = 18
 
-        total_w = (label_surf.get_width() + spacing +
-                   arr_click_w + spacing +
-                   pill_w + spacing +
-                   arr_click_w)
-        row_x = (MENU_W - total_w) // 2
-
-        self.screen.blit(label_surf, (row_x, gt_cy - label_surf.get_height() // 2))
-        x = row_x + label_surf.get_width() + spacing
+        total_w = arr_click_w + spacing + pill_w + spacing + arr_click_w
+        x = (MENU_W - total_w) // 2
 
         self.left_arrow_rect = pygame.Rect(x, gt_cy - pill_h // 2, arr_click_w, pill_h)
         l_hov = self.left_arrow_rect.collidepoint(mouse)
