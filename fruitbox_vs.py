@@ -44,7 +44,7 @@ WIN_W   = BOARD_W * 2 + PADDING * 4 + GAP
 WIN_H   = BOARD_H + PADDING * 2 + HUD_H
 
 # HUD button layout — buttons are right-aligned from the AI board's right edge
-_BTN_H = 26
+_BTN_H = 34
 _BTN_Y = (HUD_H - _BTN_H) // 2
 
 # Pre-calculate right edge of AI board
@@ -96,6 +96,14 @@ class FruitBoxVs:
         # ── pygame_gui ────────────────────────────────────────────
         self.ui = pygame_gui.UIManager((WIN_W, WIN_H), _THEME)
 
+        _icon_sz = _BTN_H - 8
+        _raw = pygame.image.load(_resource("assets/pause.circle.png")).convert_alpha()
+        self._icon_pause   = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+        _raw = pygame.image.load(_resource("assets/play.circle.png")).convert_alpha()
+        self._icon_play    = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+        _raw = pygame.image.load(_resource("assets/arrow.counterclockwise.circle.png")).convert_alpha()
+        self._icon_restart = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+
         # Buttons placed right-to-left from AI board right edge
         rx = _AI_BOARD_RIGHT - PADDING
 
@@ -107,14 +115,6 @@ class FruitBoxVs:
         )
         rx -= 60 + 8
 
-        # Pause
-        self.pause_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(rx - 34, _BTN_Y, 34, _BTN_H),
-            text="||",
-            manager=self.ui,
-        )
-        rx -= 34 + 8
-
         # Menu
         self.menu_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(rx - 56, _BTN_Y, 56, _BTN_H),
@@ -123,10 +123,18 @@ class FruitBoxVs:
         )
         rx -= 56 + 8
 
+        # Pause
+        self.pause_btn = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(rx - 34, _BTN_Y, 34, _BTN_H),
+            text="",
+            manager=self.ui,
+        )
+        rx -= 34 + 8
+
         # Restart
         self.restart_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(rx - 70, _BTN_Y, 70, _BTN_H),
-            text="Restart",
+            relative_rect=pygame.Rect(rx - 34, _BTN_Y, 34, _BTN_H),
+            text="",
             manager=self.ui,
         )
 
@@ -215,10 +223,7 @@ class FruitBoxVs:
         self.screen.blit(timer_surf, (tx, 28))
 
         # Update dynamic button labels
-        new_pause_text  = ">" if self.human_game.paused else "||"
         new_toggle_text = "Hide" if self.ai_board_visible else "Show"
-        if self.pause_btn.text  != new_pause_text:
-            self.pause_btn.set_text(new_pause_text)
         if self.toggle_btn.text != new_toggle_text:
             self.toggle_btn.set_text(new_toggle_text)
 
@@ -494,6 +499,13 @@ class FruitBoxVs:
 
             self.ui.update(dt)
             self.ui.draw_ui(self.screen)
+
+            icon  = self._icon_play if self.human_game.paused else self._icon_pause
+            btn_r = self.pause_btn.get_abs_rect()
+            self.screen.blit(icon, icon.get_rect(center=btn_r.center))
+
+            btn_r = self.restart_btn.get_abs_rect()
+            self.screen.blit(self._icon_restart, self._icon_restart.get_rect(center=btn_r.center))
 
             if self.game_over and self.show_game_over:
                 self._draw_game_over()

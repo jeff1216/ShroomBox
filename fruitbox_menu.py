@@ -1,3 +1,4 @@
+import os
 import sys
 import pygame
 import pygame_gui
@@ -9,7 +10,7 @@ from fruitbox_pygame import (
     FruitBoxPygame,
     WIN_W as GAME_W, WIN_H as GAME_H,
     BG, TEXT_PRIMARY, TEXT_SECONDARY,
-    _THEME,
+    _THEME, _ASSETS,
 )
 
 MENU_W = GAME_W
@@ -70,27 +71,25 @@ class FruitBoxMenu:
             object_id="#card_btn",
         )
 
-        # Top-right buttons  (Settings, then Stats to its left)
-        btn_pad_x, btn_pad_y = 10, 5
-        s_surf  = self.font_btn.render("Settings", True, TEXT_SECONDARY)
-        s_w     = s_surf.get_width()  + btn_pad_x * 2
-        s_h     = s_surf.get_height() + btn_pad_y * 2
-        s_x     = MENU_W - s_w - 14
+        # Top-right icon buttons (Settings + Stats), both square
+        s_h  = 32
+        s_x  = MENU_W - s_h - 14
+        st_x = s_x - s_h - 8
 
-        st_surf = self.font_btn.render("Stats", True, TEXT_SECONDARY)
-        st_w    = st_surf.get_width()  + btn_pad_x * 2
-        st_h    = st_surf.get_height() + btn_pad_y * 2
-        st_x    = s_x - st_w - 8
+        _raw = pygame.image.load(os.path.join(_ASSETS, "gearshape.png")).convert_alpha()
+        self._icon_settings = pygame.transform.smoothscale(_raw, (s_h - 6, s_h - 6))
+        _raw = pygame.image.load(os.path.join(_ASSETS, "waveform.path.ecg.png")).convert_alpha()
+        self._icon_stats    = pygame.transform.smoothscale(_raw, (s_h - 6, s_h - 6))
 
         self.settings_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(s_x, _TOP_BTN_Y, s_w, s_h),
-            text="Settings",
+            relative_rect=pygame.Rect(s_x, _TOP_BTN_Y, s_h, s_h),
+            text="",
             manager=self.ui,
             object_id="#top_btn",
         )
         self.stats_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(st_x, _TOP_BTN_Y, st_w, st_h),
-            text="Stats",
+            relative_rect=pygame.Rect(st_x, _TOP_BTN_Y, s_h, s_h),
+            text="",
             manager=self.ui,
             object_id="#top_btn",
         )
@@ -165,6 +164,11 @@ class FruitBoxMenu:
 
         self.ui.update(dt)
         self.ui.draw_ui(self.screen)
+
+        btn_r = self.settings_btn.get_abs_rect()
+        self.screen.blit(self._icon_settings, self._icon_settings.get_rect(center=btn_r.center))
+        btn_r = self.stats_btn.get_abs_rect()
+        self.screen.blit(self._icon_stats, self._icon_stats.get_rect(center=btn_r.center))
 
         # Overlays drawn after ui.draw_ui so they appear on top of the card buttons
         self.settings.draw(self.screen)

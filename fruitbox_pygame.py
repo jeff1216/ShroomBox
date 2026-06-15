@@ -44,19 +44,18 @@ BTN_COLOR        = (210, 208, 200)
 BTN_HOVER_COLOR  = (190, 188, 180)
 BTN_BORDER_COLOR = (160, 158, 150)
 
-_THEME = os.path.join(
-    getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))),
-    "theme.json",
-)
+_BASE_DIR = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+_THEME    = os.path.join(_BASE_DIR, "theme.json")
+_ASSETS   = os.path.join(_BASE_DIR, "assets")
 
 # HUD button layout
-_BTN_H  = 26
+_BTN_H  = 34
 _BTN_Y  = (HUD_H - _BTN_H) // 2   # 23
 _BTN_X0 = PADDING + 90              # 106  (score area ends around x=80)
 
 _PAUSE_W   = 34
 _MENU_W    = 56
-_RESTART_W = 70
+_RESTART_W = 34
 
 
 def draw_rounded_rect(surf, color, rect, radius=8):
@@ -106,22 +105,30 @@ class FruitBoxPygame:
         # ── pygame_gui ────────────────────────────────────────────
         self.ui = pygame_gui.UIManager((WIN_W, WIN_H), _THEME)
 
+        _icon_sz = _BTN_H - 8
+        _raw = pygame.image.load(os.path.join(_ASSETS, "pause.circle.png")).convert_alpha()
+        self._icon_pause   = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+        _raw = pygame.image.load(os.path.join(_ASSETS, "play.circle.png")).convert_alpha()
+        self._icon_play    = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+        _raw = pygame.image.load(os.path.join(_ASSETS, "arrow.counterclockwise.circle.png")).convert_alpha()
+        self._icon_restart = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+
         bx = _BTN_X0
-        self.pause_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(bx, _BTN_Y, _PAUSE_W, _BTN_H),
-            text="||",
-            manager=self.ui,
-        )
-        bx += _PAUSE_W + 8
         self.menu_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(bx, _BTN_Y, _MENU_W, _BTN_H),
             text="Menu",
             manager=self.ui,
         )
         bx += _MENU_W + 8
+        self.pause_btn = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(bx, _BTN_Y, _PAUSE_W, _BTN_H),
+            text="",
+            manager=self.ui,
+        )
+        bx += _PAUSE_W + 8
         self.restart_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(bx, _BTN_Y, _RESTART_W, _BTN_H),
-            text="Restart",
+            text="",
             manager=self.ui,
         )
 
@@ -170,10 +177,6 @@ class FruitBoxPygame:
 
         self.screen.blit(self.font_label.render("TIME", True, TEXT_SECONDARY), (bar_x, 12))
         self.screen.blit(self.font_score.render(f"{int(t):d}s", True, tcol),   (bar_x, 28))
-
-        new_pause_text = ">" if self.game.paused else "||"
-        if self.pause_btn.text != new_pause_text:
-            self.pause_btn.set_text(new_pause_text)
 
     def draw_grid(self):
         bounds = self.selection_bounds()
@@ -381,6 +384,13 @@ class FruitBoxPygame:
 
             self.ui.update(dt)
             self.ui.draw_ui(self.screen)
+
+            icon  = self._icon_play if self.game.paused else self._icon_pause
+            btn_r = self.pause_btn.get_abs_rect()
+            self.screen.blit(icon, icon.get_rect(center=btn_r.center))
+
+            btn_r = self.restart_btn.get_abs_rect()
+            self.screen.blit(self._icon_restart, self._icon_restart.get_rect(center=btn_r.center))
 
             if self.game_over and self.show_game_over:
                 self.draw_game_over()

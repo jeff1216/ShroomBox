@@ -15,10 +15,10 @@ from fruitbox_pygame import (
     TEXT_PRIMARY, TEXT_SECONDARY,
     TIMER_OK, TIMER_WARN, TIMER_DANGER,
     VALID_FILL, VALID_BOR,
-    _THEME,
+    _THEME, _ASSETS,
 )
 
-_BTN_H = 26
+_BTN_H = 34
 _BTN_Y = (HUD_H - _BTN_H) // 2
 _BTN_X0 = PADDING + 90
 
@@ -63,6 +63,10 @@ class FruitBoxAiWatch:
         # ── pygame_gui ────────────────────────────────────────────
         self.ui = pygame_gui.UIManager((WIN_W, WIN_H), _THEME)
 
+        _icon_sz = _BTN_H - 8
+        _raw = pygame.image.load(os.path.join(_ASSETS, "arrow.counterclockwise.circle.png")).convert_alpha()
+        self._icon_restart = pygame.transform.smoothscale(_raw, (_icon_sz, _icon_sz))
+
         bx = _BTN_X0
         self.menu_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(bx, _BTN_Y, 56, _BTN_H),
@@ -71,8 +75,8 @@ class FruitBoxAiWatch:
         )
         bx += 56 + 8
         self.restart_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(bx, _BTN_Y, 70, _BTN_H),
-            text="Restart",
+            relative_rect=pygame.Rect(bx, _BTN_Y, _BTN_H, _BTN_H),
+            text="",
             manager=self.ui,
         )
 
@@ -240,6 +244,9 @@ class FruitBoxAiWatch:
 
             self.ui.update(dt)
             self.ui.draw_ui(self.screen)
+
+            btn_r = self.restart_btn.get_abs_rect()
+            self.screen.blit(self._icon_restart, self._icon_restart.get_rect(center=btn_r.center))
 
             if self.game_over and self.show_game_over:
                 self._draw_game_over()
