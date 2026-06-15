@@ -17,8 +17,6 @@ MENU_W = GAME_W
 MENU_H = GAME_H
 
 ACCENT       = (24,  95, 165)
-ARROW_COLOR  = (220, 130, 50)
-ARROW_HOVER  = (180,  90, 20)
 
 GRID_TYPES = ["random", "solvable"]
 
@@ -39,10 +37,14 @@ class FruitBoxMenu:
         self.clock       = pygame.time.Clock()
         self.font_title  = pygame.font.SysFont("Arial", 52, bold=True)
         self.font_hint   = pygame.font.SysFont("Arial", 12)
-        self.font_toggle = pygame.font.SysFont("Arial", 15, bold=True)
-        self.font_arrow  = pygame.font.SysFont("Arial", 22, bold=True)
+        self.font_toggle = pygame.font.SysFont("Arial", 20, bold=True)
         self.font_label  = pygame.font.SysFont("Arial", 15)
         self.font_btn    = pygame.font.SysFont("Arial", 13)
+
+        _raw = pygame.image.load(os.path.join(_ASSETS, "arrowtriangle.left.fill.png")).convert_alpha()
+        self._icon_arr_l = pygame.transform.smoothscale(_raw, (32, 32))
+        _raw = pygame.image.load(os.path.join(_ASSETS, "arrowtriangle.right.fill.png")).convert_alpha()
+        self._icon_arr_r = pygame.transform.smoothscale(_raw, (32, 32))
 
         self.grid_type_idx    = 0
         self.left_arrow_rect  = pygame.Rect(0, 0, 0, 0)
@@ -105,7 +107,6 @@ class FruitBoxMenu:
 
     def _draw(self, dt):
         self.screen.fill(BG)
-        mouse = pygame.mouse.get_pos()
 
         # title
         title = self.font_title.render("Fruit Box", True, TEXT_PRIMARY)
@@ -115,24 +116,18 @@ class FruitBoxMenu:
         gt_cy = _CARD_Y + _CARD_H + 60
 
         pill_surf  = self.font_toggle.render(self.grid_type.capitalize(), True, ACCENT)
-        pill_pad_x, pill_pad_y = 20, 8
-        pill_w = max(pill_surf.get_width() + pill_pad_x * 2, 140)
+        pill_pad_x, pill_pad_y = 28, 12
+        pill_w = max(pill_surf.get_width() + pill_pad_x * 2, 180)
         pill_h = pill_surf.get_height() + pill_pad_y * 2
 
-        arr_l       = self.font_arrow.render("<", True, ARROW_COLOR)
-        arr_r       = self.font_arrow.render(">", True, ARROW_COLOR)
-        arr_click_w = arr_l.get_width() + 24
+        arr_click_w = self._icon_arr_l.get_width() + 24
         spacing     = 18
 
         total_w = arr_click_w + spacing + pill_w + spacing + arr_click_w
         x = (MENU_W - total_w) // 2
 
         self.left_arrow_rect = pygame.Rect(x, gt_cy - pill_h // 2, arr_click_w, pill_h)
-        l_hov = self.left_arrow_rect.collidepoint(mouse)
-        self.screen.blit(
-            self.font_arrow.render("<", True, ARROW_HOVER if l_hov else ARROW_COLOR),
-            (x + 12, gt_cy - arr_l.get_height() // 2),
-        )
+        self.screen.blit(self._icon_arr_l, self._icon_arr_l.get_rect(center=(x + arr_click_w // 2, gt_cy)))
         x += arr_click_w + spacing
 
         pill_rect = pygame.Rect(x, gt_cy - pill_h // 2, pill_w, pill_h)
@@ -145,11 +140,7 @@ class FruitBoxMenu:
         x += pill_w + spacing
 
         self.right_arrow_rect = pygame.Rect(x, gt_cy - pill_h // 2, arr_click_w, pill_h)
-        r_hov = self.right_arrow_rect.collidepoint(mouse)
-        self.screen.blit(
-            self.font_arrow.render(">", True, ARROW_HOVER if r_hov else ARROW_COLOR),
-            (x + 12, gt_cy - arr_r.get_height() // 2),
-        )
+        self.screen.blit(self._icon_arr_r, self._icon_arr_r.get_rect(center=(x + arr_click_w // 2, gt_cy)))
 
         # bottom hint
         hint = self.font_hint.render("Press ESC during a game to return here", True, TEXT_SECONDARY)
