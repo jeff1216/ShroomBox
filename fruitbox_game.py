@@ -4,7 +4,7 @@ from fruitbox_grid import FruitBoxGrid
 
 
 class FruitBoxGame:
-    def __init__(self, rows=10, columns=17, time_limit=10, grid_type="random"):
+    def __init__(self, rows=10, columns=17, time_limit=120, grid_type="random"):
         self.rows = rows
         self.columns = columns
         self.time_limit = time_limit

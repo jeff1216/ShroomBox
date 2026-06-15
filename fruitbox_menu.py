@@ -241,7 +241,6 @@ class FruitBoxMenu:
         self.grid_type_idx    = 0
         self.left_arrow_rect  = pygame.Rect(0, 0, 0, 0)
         self.right_arrow_rect = pygame.Rect(0, 0, 0, 0)
-        self.watch_btn_rect   = pygame.Rect(MENU_W - 60, MENU_H - 30, 60, 30)
 
         self.settings       = SettingsOverlay()
         self.stats_overlay  = StatsOverlay()
@@ -307,6 +306,10 @@ class FruitBoxMenu:
         self.dm_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(hlp_x, _TOP_BTN_Y, s_h, s_h),
             text="", manager=self.ui, object_id="#top_btn",
+        )
+        self.watch_btn = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(MENU_W - 70, MENU_H - 34, 60, 24),
+            text="Demo", manager=self.ui, object_id="#top_btn",
         )
 
     @property
@@ -391,8 +394,9 @@ class FruitBoxMenu:
         hint = self.font_hint.render("Press ESC during a game to return here", True, C["TEXT_SECONDARY"])
         self.screen.blit(hint, ((MENU_W - hint.get_width()) // 2, MENU_H - 26))
 
+
         overlay_open = self.settings.visible or self.stats_overlay.visible or self.help_overlay.visible or self.custom_overlay.visible
-        for btn in (self.sp_btn, self.settings_btn, self.stats_btn, self.help_btn, self.dm_btn):
+        for btn in (self.sp_btn, self.settings_btn, self.stats_btn, self.help_btn, self.dm_btn, self.watch_btn):
             if overlay_open and btn.is_enabled:
                 btn.disable()
             elif not overlay_open and not btn.is_enabled:
@@ -464,6 +468,8 @@ class FruitBoxMenu:
                         self.stats_overlay.reload_theme()
                         self.custom_overlay.reload_theme()
                         self._build_ui()
+                    if event.ui_element == self.watch_btn:
+                        return "watch_ai"
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if self.left_arrow_rect.collidepoint(event.pos):
@@ -472,8 +478,6 @@ class FruitBoxMenu:
                         self.grid_type_idx = (self.grid_type_idx + 1) % len(GRID_TYPES)
                     elif self.gear_btn_rect.collidepoint(event.pos):
                         self.custom_overlay.toggle()
-                    elif self.watch_btn_rect.collidepoint(event.pos):
-                        return "watch_ai"
 
                 self.ui.process_events(event)
 
