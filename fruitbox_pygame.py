@@ -77,9 +77,10 @@ def draw_rounded_rect_border(surf, color, rect, width=1, radius=8):
 
 
 class FruitBoxPygame:
-    def __init__(self, game=None, screen=None, gamemode="single_player"):
-        self.game    = game if game is not None else FruitBoxGame()
-        self.gamemode = gamemode
+    def __init__(self, game=None, screen=None, gamemode="single_player", restart_seed=None):
+        self.game         = game if game is not None else FruitBoxGame()
+        self.gamemode     = gamemode
+        self._restart_seed = restart_seed
         if game is None:
             self.game.reset()
 
@@ -283,7 +284,7 @@ class FruitBoxPygame:
     # ── state ─────────────────────────────────────────────────────
 
     def restart(self):
-        self.game.reset()
+        self.game.reset(seed=self._restart_seed)
         self.game.paused      = False
         self.drag_start       = None
         self.drag_end         = None
