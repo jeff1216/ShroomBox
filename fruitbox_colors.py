@@ -119,6 +119,19 @@ def load_icon(path, size):
     return scaled
 
 
+def load_icon_fit(path, max_w, max_h):
+    """Load and tint an icon scaled to fit within (max_w, max_h), preserving aspect ratio."""
+    import pygame
+    raw = pygame.image.load(path).convert_alpha()
+    iw, ih = raw.get_size()
+    scale = min(max_w / iw, max_h / ih)
+    new_size = (max(1, int(iw * scale)), max(1, int(ih * scale)))
+    scaled = pygame.transform.smoothscale(raw, new_size)
+    if _dark:
+        return tint_icon(scaled, C["TEXT_PRIMARY"])
+    return scaled
+
+
 def _load():
     global _dark
     _dark = bool(fruitbox_config.get("dark_mode"))
