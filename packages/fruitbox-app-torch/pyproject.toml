@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fruitbox-app-torch"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fruitbox-core",
+    "fruitbox-pygame",
+    "sb3-contrib",
+    "stable-baselines3",
+]
+
+[project.optional-dependencies]
+cpu = ["torch"]
+cu128 = ["torch"]
+
+[project.scripts]
+fruitbox = "fruitbox_app_torch.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fruitbox_app_torch"]

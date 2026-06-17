@@ -4,7 +4,8 @@ A puzzle game where you select groups of fruits whose numbers sum to 10 to clear
 
 ## Download
 
-**[Download FruitBox.exe](https://github.com/jeff1216/Fruitbox/releases/latest/download/FruitBox.exe)**
+- **[fruitbox.exe](https://github.com/jeff1216/Fruitbox/releases/latest/download/fruitbox.exe)** — PyTorch / SB3 inference
+- **[fruitbox-onnx.exe](https://github.com/jeff1216/Fruitbox/releases/latest/download/fruitbox-onnx.exe)** — ONNX inference (no PyTorch)
 
 Windows only. No installation required — just run the executable.
 
@@ -42,22 +43,22 @@ Scores in Custom mode are not counted towards the highscore.
 
 ## Building from Source
 
-```
-uv sync --extra cu128
-uv run --extra cu128 python fruitbox_menu.py
+This repo is a [uv workspace](https://docs.astral.sh/uv/concepts/projects/workspaces/) with hatchling-built packages:
+
+| Package | Role |
+|---|---|
+| `fruitbox-core` | Game logic, gym env, solver |
+| `fruitbox-pygame` | Pygame UI and menus |
+| `fruitbox-app-torch` | Desktop app with SB3/PyTorch (`fruitbox` CLI) |
+| `fruitbox-app-onnx` | Desktop app with ONNX only (`fruitbox-onnx` CLI) |
+| `fruitbox-train` | Training and watch CLIs |
+| `fruitbox-web` | pygbag / WASM web overlay |
+
+```bash
+uv sync --extra cpu --all-packages   # install everything (CPU PyTorch)
+uv run fruitbox                      # PyTorch desktop app
+uv run fruitbox-onnx                 # ONNX desktop app
+uv run fruitbox-train --watch        # train with live preview
 ```
 
-To build the Windows executable:
-
-```
-uv sync --group build
-uv run --extra cpu python -m PyInstaller --onefile --windowed --name FruitBox \
-  --add-data "fruitbox_ppo_final.zip;." \
-  --add-data "theme.json;." \
-  --add-data "theme_dark.json;." \
-  --add-data "assets;assets" \
-  --collect-data stable_baselines3 \
-  --collect-data sb3_contrib \
-  --collect-data pygame_gui \
-  fruitbox_menu.py
-```
+Windows executables are built in CI via PyInstaller (`fruitbox.exe` and `fruitbox-onnx.exe`). The ONNX model is bundled from [Hugging Face](https://huggingface.co/Fungster/fruitbox-ppo/blob/main/fruitbox_policy.onnx).

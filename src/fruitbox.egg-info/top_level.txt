@@ -1,2 +1,0 @@
-fruitbox
-fruitbox_web
