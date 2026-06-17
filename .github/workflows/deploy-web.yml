@@ -29,10 +29,10 @@ jobs:
           python-version: "3.13"
 
       - name: Install build dependencies
-        run: pip install pygbag huggingface_hub
+        run: uv sync --extra cpu --group web --all-packages
 
       - name: Build with pygbag
-        run: python tools/build_web.py
+        run: uv run python tools/build_web.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
