@@ -32,7 +32,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install pygbag
-        run: pip install pygbag
+        run: uv pip install pygbag
 
       - name: Build with pygbag
         run: uv run python tools/build_web.py
