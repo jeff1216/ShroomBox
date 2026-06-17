@@ -11,15 +11,24 @@ dependencies = [
     "numpy",
     "pygame-ce",
     "pygame_gui",
-    "sb3-contrib",
-    "stable-baselines3",
-    "torch",
 ]
 
 [project.scripts]
 fruitbox       = "fruitbox.menu:main"
 fruitbox-train = "fruitbox.train:main"
 fruitbox-watch = "fruitbox.watch:main"
+
+[project.optional-dependencies]
+cpu = [
+    "sb3-contrib",
+    "stable-baselines3",
+    "torch",
+]
+cu128 = [
+    "sb3-contrib",
+    "stable-baselines3",
+    "torch",
+]
 
 [dependency-groups]
 build = ["huggingface_hub", "pyinstaller"]
@@ -30,8 +39,24 @@ web   = ["onnxruntime", "onnxscript", "pygbag"]
 where = ["src"]
 include = ["fruitbox*", "fruitbox_web*"]
 
+[tool.uv]
+conflicts = [
+    [
+        { extra = "cpu" },
+        { extra = "cu128" },
+    ],
+]
+
 [tool.uv.sources]
-torch = { index = "pytorch-cu128" }
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu128", extra = "cu128" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url  = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [[tool.uv.index]]
 name = "pytorch-cu128"

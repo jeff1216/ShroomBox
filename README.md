@@ -43,14 +43,15 @@ Scores in Custom mode are not counted towards the highscore.
 ## Building from Source
 
 ```
-pip install -r requirements.txt
-python fruitbox_menu.py
+uv sync --extra cu128
+uv run --extra cu128 python fruitbox_menu.py
 ```
 
 To build the Windows executable:
 
 ```
-python -m PyInstaller --onefile --windowed --name FruitBox \
+uv sync --group build
+uv run --extra cpu python -m PyInstaller --onefile --windowed --name FruitBox \
   --add-data "fruitbox_ppo_final.zip;." \
   --add-data "theme.json;." \
   --add-data "theme_dark.json;." \

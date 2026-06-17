@@ -6,6 +6,11 @@ Requires-Dist: gymnasium
 Requires-Dist: numpy
 Requires-Dist: pygame-ce
 Requires-Dist: pygame_gui
-Requires-Dist: sb3-contrib
-Requires-Dist: stable-baselines3
-Requires-Dist: torch
+Provides-Extra: cpu
+Requires-Dist: sb3-contrib; extra == "cpu"
+Requires-Dist: stable-baselines3; extra == "cpu"
+Requires-Dist: torch; extra == "cpu"
+Provides-Extra: cu128
+Requires-Dist: sb3-contrib; extra == "cu128"
+Requires-Dist: stable-baselines3; extra == "cu128"
+Requires-Dist: torch; extra == "cu128"
