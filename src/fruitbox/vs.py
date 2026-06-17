@@ -14,7 +14,7 @@ from .env import FruitBoxEnv
 from . import stats as fruitbox_stats
 from . import config as fruitbox_config
 from . import colors as fruitbox_colors
-from .pygame_ui import FPS, get_theme
+from .pygame_ui import FPS, get_theme, _ASSETS
 from .solver import solve
 
 
@@ -26,6 +26,7 @@ def _resource(rel):
 
 
 MODEL_PATH  = _resource("fruitbox_ppo_final")
+ONNX_PATH   = _resource("web_assets/fruitbox_policy.onnx")
 AI_INTERVAL = 0.5
 
 CELL    = 50
@@ -62,7 +63,8 @@ class FruitBoxVs:
             self.screen = pygame.display.set_mode((WIN_W, WIN_H))
         else:
             self.screen = screen
-        pygame.display.set_caption(f"Fruit Box — vs {'Solver' if opponent == 'solver' else 'RL Model'}")
+        _labels = {"solver": "Solver", "rl_model": "RL Model", "onnx": "ONNX"}
+        pygame.display.set_caption(f"Fruit Box — vs {_labels.get(opponent, opponent)}")
         self.clock = pygame.time.Clock()
 
         self.font_num   = pygame.font.SysFont("Arial", 20, bold=True)
@@ -79,6 +81,11 @@ class FruitBoxVs:
             self.ai_env  = ActionMasker(FruitBoxEnv(), mask_fn)
             self.ai_game = self.ai_env.env.game
             self.model   = MaskablePPO.load(MODEL_PATH)
+        elif opponent == "onnx":
+            from .onnx_agent import OnnxAgent
+            self.ai_env  = ActionMasker(FruitBoxEnv(), mask_fn)
+            self.ai_game = self.ai_env.env.game
+            self.model   = OnnxAgent(ONNX_PATH)
         else:
             self.ai_env = None
             self.model  = None
@@ -94,11 +101,11 @@ class FruitBoxVs:
         self.ui = pygame_gui.UIManager((WIN_W, WIN_H), get_theme())
 
         _icon_sz = _BTN_H - 8
-        self._icon_pause     = fruitbox_colors.load_icon(_resource("assets/pause.circle.png"), _icon_sz)
-        self._icon_play      = fruitbox_colors.load_icon(_resource("assets/play.circle.png"), _icon_sz)
-        self._icon_restart   = fruitbox_colors.load_icon(_resource("assets/arrow.counterclockwise.circle.png"), _icon_sz)
-        self._icon_eye       = fruitbox_colors.load_icon_fit(_resource("assets/eye.png"), _icon_sz, _icon_sz)
-        self._icon_eye_slash = fruitbox_colors.load_icon_fit(_resource("assets/eye.slash.png"), _icon_sz, _icon_sz)
+        self._icon_pause     = fruitbox_colors.load_icon(os.path.join(_ASSETS, "pause.circle.png"), _icon_sz)
+        self._icon_play      = fruitbox_colors.load_icon(os.path.join(_ASSETS, "play.circle.png"), _icon_sz)
+        self._icon_restart   = fruitbox_colors.load_icon(os.path.join(_ASSETS, "arrow.counterclockwise.circle.png"), _icon_sz)
+        self._icon_eye       = fruitbox_colors.load_icon_fit(os.path.join(_ASSETS, "eye.png"), _icon_sz, _icon_sz)
+        self._icon_eye_slash = fruitbox_colors.load_icon_fit(os.path.join(_ASSETS, "eye.slash.png"), _icon_sz, _icon_sz)
 
         # Buttons placed right-to-left from AI board right edge
         # Visual order left→right: Menu | Pause | Restart | Hide
@@ -210,7 +217,7 @@ class FruitBoxVs:
         self.screen.blit(self.font_label.render("YOU", True, C["TEXT_SECONDARY"]), (self._human_x(), 12))
         self.screen.blit(self.font_score.render(str(self.human_game.score), True, C["TEXT_PRIMARY"]), (self._human_x(), 28))
 
-        ai_label = "SOLVER" if self.opponent == "solver" else "RL MODEL"
+        ai_label = {"solver": "SOLVER", "rl_model": "RL MODEL", "onnx": "ONNX"}.get(self.opponent, self.opponent.upper())
         self.screen.blit(self.font_label.render(ai_label, True, C["TEXT_SECONDARY"]), (self._ai_x(), 12))
         self.screen.blit(self.font_score.render(str(self.ai_game.score), True, C["TEXT_PRIMARY"]), (self._ai_x(), 28))
 
@@ -337,7 +344,7 @@ class FruitBoxVs:
         self.human_game.reset()
         self.human_game.paused = False
 
-        if self.opponent == "rl_model":
+        if self.opponent in ("rl_model", "onnx"):
             self.ai_env.reset()
             self.ai_game.grid = self.human_game.grid.copy()
         else:
@@ -459,7 +466,7 @@ class FruitBoxVs:
                 if self.human_over and self.ai_over:
                     self.game_over = True
                     h, a = self.human_game.score, self.ai_game.score
-                    opp  = "Solver" if self.opponent == "solver" else "RL Model"
+                    opp  = {"solver": "Solver", "rl_model": "RL Model", "onnx": "ONNX"}.get(self.opponent, self.opponent)
                     if   h > a: self.over_reason = f"You win!  {h} – {a}"
                     elif a > h: self.over_reason = f"{opp} wins!  {h} – {a}"
                     else:       self.over_reason = f"Tie!  {h} – {a}"
@@ -517,6 +524,6 @@ class FruitBoxVs:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--opponent", choices=["solver", "rl_model"], default="solver")
+    parser.add_argument("--opponent", choices=["solver", "rl_model", "onnx"], default="solver")
     args = parser.parse_args()
     FruitBoxVs(opponent=args.opponent).run()
