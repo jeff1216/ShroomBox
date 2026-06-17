@@ -1,6 +1,6 @@
 import pygame
-import fruitbox_config
-import fruitbox_colors
+from . import config as fruitbox_config
+from . import colors as fruitbox_colors
 
 _BINDINGS = [
     ("key_pause",   "Pause"),

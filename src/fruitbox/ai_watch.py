@@ -8,10 +8,10 @@ import pygame_gui
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from fruitbox_env import FruitBoxEnv
-import fruitbox_colors
-import fruitbox_config
-from fruitbox_pygame import (
+from .env import FruitBoxEnv
+from . import colors as fruitbox_colors
+from . import config as fruitbox_config
+from .pygame_ui import (
     FPS, CELL, PADDING, HUD_H, COLS, ROWS, WIN_W, WIN_H,
     get_theme, _ASSETS,
 )
@@ -22,8 +22,9 @@ _BTN_X0 = PADDING + 90
 
 
 def _resource(rel):
-    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base, rel)
+    if getattr(sys, "frozen", False):
+        return os.path.join(sys._MEIPASS, rel)
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), rel)
 
 
 MODEL_PATH  = _resource("fruitbox_ppo_final")

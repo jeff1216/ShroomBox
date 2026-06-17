@@ -2,9 +2,9 @@ import pygame
 import pygame_gui
 import time
 import subprocess
-import fruitbox_stats
-import fruitbox_colors
-from fruitbox_pygame import WIN_W as _W, WIN_H as _H, get_theme
+from . import stats as fruitbox_stats
+from . import colors as fruitbox_colors
+from .pygame_ui import WIN_W as _W, WIN_H as _H, get_theme
 
 _CARD_W = 440
 _CARD_H = 360

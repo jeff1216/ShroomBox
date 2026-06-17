@@ -7,8 +7,8 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from fruitbox_env import FruitBoxEnv
-from watch_callback import WatchCallback
+from .env import FruitBoxEnv
+from .watch_callback import WatchCallback
 
 MODEL_PATH  = "fruitbox_ppo_final"
 NEW = False
@@ -23,7 +23,7 @@ def make_env():
     return env
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--watch", action="store_true", help="Render a game episode every N steps during training")
     args = parser.parse_args()
@@ -69,3 +69,7 @@ if __name__ == "__main__":
     model.learn(total_timesteps=n_steps * n_envs, callback=callbacks, progress_bar=True)
     model.save("fruitbox_ppo_final")
     print("Training complete.")
+
+
+if __name__ == "__main__":
+    main()

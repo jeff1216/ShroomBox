@@ -9,8 +9,8 @@ from stable_baselines3.common.callbacks import BaseCallback
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from fruitbox_env import FruitBoxEnv
-from fruitbox_pygame import FruitBoxPygame, BG
+from .env import FruitBoxEnv
+from .pygame_ui import FruitBoxPygame, BG
 
 
 def mask_fn(env):

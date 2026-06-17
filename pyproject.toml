@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fruitbox"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "gymnasium",
+    "numpy",
+    "pygame-ce",
+    "pygame_gui",
+    "sb3-contrib",
+    "stable-baselines3",
+    "torch",
+]
+
+[project.scripts]
+fruitbox       = "fruitbox.menu:main"
+fruitbox-train = "fruitbox.train:main"
+fruitbox-watch = "fruitbox.watch:main"
+
+[dependency-groups]
+build = ["huggingface_hub", "pyinstaller"]
+plot  = ["matplotlib", "pandas", "tensorboard"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url  = "https://download.pytorch.org/whl/cu128"
+explicit = true

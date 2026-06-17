@@ -2,13 +2,13 @@ import os
 import sys
 import pygame
 import pygame_gui
-import fruitbox_colors
+from . import colors as fruitbox_colors
 
-from fruitbox_game import FruitBoxGame
-from fruitbox_settings import SettingsOverlay
-from fruitbox_stats_screen import StatsOverlay
-from fruitbox_help import HelpOverlay
-from fruitbox_pygame import (
+from .game import FruitBoxGame
+from .settings import SettingsOverlay
+from .stats_screen import StatsOverlay
+from .help import HelpOverlay
+from .pygame_ui import (
     FruitBoxPygame,
     WIN_W as GAME_W, WIN_H as GAME_H,
     game_window_size,
@@ -608,5 +608,9 @@ class FruitBoxMenu:
             self._launch(mode)
 
 
-if __name__ == "__main__":
+def main():
     FruitBoxMenu().run()
+
+
+if __name__ == "__main__":
+    main()

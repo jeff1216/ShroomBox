@@ -9,18 +9,20 @@ import pygame_gui
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from fruitbox_game import FruitBoxGame
-from fruitbox_env import FruitBoxEnv
-import fruitbox_stats
-import fruitbox_config
-import fruitbox_colors
-from fruitbox_pygame import FPS, get_theme
-from solver import solve
+from .game import FruitBoxGame
+from .env import FruitBoxEnv
+from . import stats as fruitbox_stats
+from . import config as fruitbox_config
+from . import colors as fruitbox_colors
+from .pygame_ui import FPS, get_theme
+from .solver import solve
 
 
 def _resource(rel):
-    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base, rel)
+    if getattr(sys, "frozen", False):
+        return os.path.join(sys._MEIPASS, rel)
+    # project root is two directories above src/fruitbox/
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), rel)
 
 
 MODEL_PATH  = _resource("fruitbox_ppo_final")

@@ -1,4 +1,4 @@
-import fruitbox_config
+from . import config as fruitbox_config
 
 _LIGHT = {
     "BG":             (245, 243, 238),

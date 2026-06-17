@@ -1,5 +1,5 @@
 import pygame
-import fruitbox_colors
+from . import colors as fruitbox_colors
 
 _SECTIONS = [
     ("How to play:", [

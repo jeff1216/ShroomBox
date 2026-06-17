@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from fruitbox_grid import FruitBoxGrid
+from .grid import FruitBoxGrid
 
 
 class FruitBoxGame:

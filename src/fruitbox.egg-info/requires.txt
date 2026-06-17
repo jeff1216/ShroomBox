@@ -1,4 +1,3 @@
-# Runtime: game, training, and AI modes
 gymnasium
 numpy
 pygame-ce

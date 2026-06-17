@@ -18,30 +18,20 @@ jobs:
   build:
     runs-on: windows-latest
 
-    env:
-      PIP_CACHE_DIR: ${{ github.workspace }}/.pip-cache
-      PIP_DISABLE_PIP_VERSION_CHECK: "1"
-
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Restore pip cache
-        uses: actions/cache@v4
-        with:
-          path: .pip-cache
-          key: pip-win-py313-cpu-${{ hashFiles('requirements.txt', 'requirements-build.txt') }}
-          restore-keys: |
-            pip-win-py313-cpu-
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu
+        run: uv sync --group build --no-sources
 
       - name: Resolve model revision
         id: model
@@ -84,13 +74,13 @@ jobs:
         run: |
           python -m PyInstaller --onefile --windowed --name FruitBox `
             --add-data "fruitbox_ppo_final.zip;." `
-            --add-data "assets;assets" `
+            --add-data "src/fruitbox/assets;assets" `
             --collect-data pygame_gui `
             --collect-data stable_baselines3 `
             --collect-data sb3_contrib `
             --add-binary "C:\Windows\System32\VCRUNTIME140.dll;." `
             --add-binary "C:\Windows\System32\VCRUNTIME140_1.dll;." `
-            fruitbox_menu.py
+            src/fruitbox/menu.py
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4

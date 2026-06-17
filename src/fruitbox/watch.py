@@ -4,8 +4,8 @@ import pygame
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from fruitbox_env import FruitBoxEnv
-from fruitbox_pygame import FruitBoxPygame, BG
+from .env import FruitBoxEnv
+from .pygame_ui import FruitBoxPygame, BG
 
 MODEL_PATH = "fruitbox_ppo_final"
 STEP_DELAY = 0.1   # seconds to show each selection before applying the move

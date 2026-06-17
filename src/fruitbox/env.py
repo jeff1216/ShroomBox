@@ -2,7 +2,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-from fruitbox_game import FruitBoxGame
+from .game import FruitBoxGame
 
 
 class FruitBoxEnv(gym.Env):

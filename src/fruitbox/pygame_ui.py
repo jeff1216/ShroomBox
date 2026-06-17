@@ -3,10 +3,10 @@ import pygame_gui
 import sys
 import time
 import os
-import fruitbox_stats
-import fruitbox_config
-import fruitbox_colors
-from fruitbox_game import FruitBoxGame
+from . import stats as fruitbox_stats
+from . import config as fruitbox_config
+from . import colors as fruitbox_colors
+from .game import FruitBoxGame
 
 # ── layout constants ──────────────────────────────────────────────
 CELL    = 52
