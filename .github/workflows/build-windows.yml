@@ -76,7 +76,7 @@ jobs:
 
       - name: Build executable
         run: |
-          uv run python -m PyInstaller --onefile --windowed --name FruitBox `
+          uv run --extra cpu python -m PyInstaller --onefile --windowed --name FruitBox `
             --add-data "fruitbox_ppo_final.zip;." `
             --add-data "src/fruitbox/assets;assets" `
             --collect-data pygame_gui `

@@ -2,8 +2,8 @@
 Export the trained MaskablePPO policy to ONNX for use in the web build.
 
 Usage:
-    uv run python tools/export_onnx.py
-    uv run python tools/export_onnx.py --model fruitbox_ppo_final --out web_assets/fruitbox_policy.onnx
+    uv run --extra cpu python tools/export_onnx.py
+    uv run --extra cpu python tools/export_onnx.py --model fruitbox_ppo_final --out web_assets/fruitbox_policy.onnx
 
 Output: web_assets/fruitbox_policy.onnx
 
@@ -27,7 +27,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-# allow running from project root: uv run python tools/export_onnx.py
+# allow running from project root: uv run --extra cpu python tools/export_onnx.py
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from sb3_contrib import MaskablePPO
