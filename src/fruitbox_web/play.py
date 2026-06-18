@@ -5,8 +5,8 @@ import pygame_gui
 
 from fruitbox_pygame.pygame_ui import FruitBoxPygame, FPS
 from fruitbox_pygame import colors as fruitbox_colors
-from fruitbox import stats as fruitbox_stats
-from fruitbox import config as fruitbox_config
+from fruitbox_core import stats as fruitbox_stats
+from fruitbox_pygame import config as fruitbox_config
 
 
 class WebPlay(FruitBoxPygame):

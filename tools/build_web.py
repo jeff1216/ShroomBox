@@ -1,83 +1,63 @@
 """
-Build the Fruit Box web app using pygbag.
+Build the Fruit Box HTML5 web app.
 
 Usage:
-    uv run python tools/build_web.py          # build only
-    uv run python tools/build_web.py --serve  # build + local preview server
+    uv run python tools/build_web.py          # build to dist/web/
+    uv run python tools/build_web.py --serve  # build + local preview at localhost:8000
 """
 import argparse
 import os
 import shutil
-import subprocess
-import sys
 
-ROOT    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC     = os.path.join(ROOT, "src")
-ONNX    = os.path.join(ROOT, "web_assets", "fruitbox_policy.onnx")
-OUT_DIR = os.path.join(SRC, "build", "web")
+ROOT     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WEB_SRC  = os.path.join(ROOT, "web")
+OUT_DIR  = os.path.join(ROOT, "dist", "web")
+ONNX_SRC = os.path.join(ROOT, "web_assets", "fruitbox_policy.onnx")
+CORE_SRC = os.path.join(ROOT, "packages", "fruitbox-core", "src", "fruitbox_core")
 
 HF_REPO      = "Fungster/fruitbox-ppo"
 HF_ONNX_FILE = "fruitbox_policy.onnx"
 
 
-_ORT_INJECT = """\
-    <!-- onnxruntime-web: must load before Python so `ort` is in global scope -->
-    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
-    <script>
-        window._ort_tensor = (type, data, dims) => new ort.Tensor(type, data, dims);
-        if (typeof ort !== "undefined") { ort.env.wasm.numThreads = 1; }
-    </script>
-"""
-
-
-def _inject_ort(out_dir):
-    """Inject the onnxruntime-web <script> into pygbag's generated index.html."""
-    path = os.path.join(out_dir, "index.html")
-    with open(path, encoding="utf-8") as f:
-        html = f.read()
-    if "onnxruntime-web" in html:
-        print("  ort script already present, skipping injection")
-        return
-    html = html.replace("</head>", _ORT_INJECT + "</head>", 1)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(html)
-    print("  Injected onnxruntime-web script into index.html")
-
-
 def _ensure_onnx():
-    if os.path.isfile(ONNX):
+    if os.path.isfile(ONNX_SRC):
         return
-    print(f"ONNX model not found locally, downloading from Hugging Face ({HF_REPO})...")
+    print(f"ONNX model not found at {ONNX_SRC}, downloading from Hugging Face…")
     try:
         from huggingface_hub import hf_hub_download
     except ImportError:
-        raise SystemExit("huggingface_hub is required: pip install huggingface_hub")
+        raise SystemExit("huggingface_hub is required: uv pip install huggingface_hub")
     try:
-        cached = hf_hub_download(
-            HF_REPO, HF_ONNX_FILE,
-            token=os.environ.get("HF_TOKEN") or None,
-        )
+        cached = hf_hub_download(HF_REPO, HF_ONNX_FILE,
+                                 token=os.environ.get("HF_TOKEN") or None)
     except Exception as exc:
         raise SystemExit(f"Failed to download ONNX model: {exc}")
-    os.makedirs(os.path.dirname(ONNX), exist_ok=True)
-    shutil.copy2(cached, ONNX)
-    print(f"Downloaded {ONNX} ({os.path.getsize(ONNX):,} bytes)")
+    os.makedirs(os.path.dirname(ONNX_SRC), exist_ok=True)
+    shutil.copy2(cached, ONNX_SRC)
+    print(f"Downloaded to {ONNX_SRC} ({os.path.getsize(ONNX_SRC):,} bytes)")
 
 
 def build():
     _ensure_onnx()
-    print("Building web app with pygbag...")
-    subprocess.run(
-        [sys.executable, "-m", "pygbag", "--build", SRC],
-        check=True,
-        cwd=ROOT,
-    )
 
-    print(f"Copying ONNX model to {OUT_DIR}/fruitbox_policy.onnx")
-    os.makedirs(OUT_DIR, exist_ok=True)
-    shutil.copy2(ONNX, os.path.join(OUT_DIR, "fruitbox_policy.onnx"))
+    if os.path.isdir(OUT_DIR):
+        shutil.rmtree(OUT_DIR)
+    os.makedirs(OUT_DIR)
 
-    _inject_ort(OUT_DIR)
+    # Copy static web assets
+    for f in ("index.html", "style.css", "app.js"):
+        shutil.copy2(os.path.join(WEB_SRC, f), os.path.join(OUT_DIR, f))
+        print(f"  Copied {f}")
+
+    # Copy fruitbox_core Python source (loaded by Pyodide at runtime)
+    core_dest = os.path.join(OUT_DIR, "fruitbox_core")
+    shutil.copytree(CORE_SRC, core_dest,
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    print(f"  Copied fruitbox_core/ ({len(os.listdir(core_dest))} files)")
+
+    # Copy ONNX model
+    shutil.copy2(ONNX_SRC, os.path.join(OUT_DIR, "fruitbox_policy.onnx"))
+    print(f"  Copied fruitbox_policy.onnx ({os.path.getsize(ONNX_SRC):,} bytes)")
 
     print(f"\nBuild complete: {OUT_DIR}")
 
@@ -95,9 +75,8 @@ def serve():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--serve", action="store_true", help="start a local preview server after building")
+    parser.add_argument("--serve", action="store_true")
     args = parser.parse_args()
-
     build()
     if args.serve:
         serve()

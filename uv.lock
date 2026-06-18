@@ -24,7 +24,6 @@ members = [
     "fruitbox-core",
     "fruitbox-pygame",
     "fruitbox-train",
-    "fruitbox-web",
 ]
 
 [[package]]
@@ -400,25 +399,6 @@ requires-dist = [
 provides-extras = ["cpu", "cu128"]
 
 [[package]]
-name = "fruitbox-web"
-version = "0.1.0"
-source = { editable = "packages/fruitbox-web" }
-dependencies = [
-    { name = "fruitbox-app-onnx" },
-    { name = "fruitbox-core" },
-    { name = "fruitbox-pygame" },
-    { name = "onnxruntime" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fruitbox-app-onnx", editable = "packages/fruitbox-app-onnx" },
-    { name = "fruitbox-core", editable = "packages/fruitbox-core" },
-    { name = "fruitbox-pygame", editable = "packages/fruitbox-pygame" },
-    { name = "onnxruntime" },
-]
-
-[[package]]
 name = "fsspec"
 version = "2026.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -656,7 +636,7 @@ name = "macholib"
 version = "1.16.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "altgraph", marker = "sys_platform == 'darwin' or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-8-fruitbox-cpu' and extra != 'extra-8-fruitbox-cu128') or (extra == 'extra-8-fruitbox-cpu' and extra == 'extra-8-fruitbox-cu128')" },
+    { name = "altgraph", marker = "sys_platform == 'darwin' or (extra == 'extra-8-fruitbox-cpu' and extra == 'extra-8-fruitbox-cu128')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/10/2f/97589876ea967487978071c9042518d28b958d87b17dceb7cdc1d881f963/macholib-1.16.4.tar.gz", hash = "sha256:f408c93ab2e995cd2c46e34fe328b130404be143469e41bc366c807448979362", size = 59427, upload-time = "2025-11-22T08:28:38.373Z" }
 wheels = [

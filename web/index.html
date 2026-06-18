@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fruit Box</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div id="screen-loading" class="screen active">
+    <div class="loading-card">
+      <div class="logo">Fruit Box</div>
+      <div class="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="loading-status" id="loading-status">Initializing…</div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div id="screen-menu" class="screen">
+    <div class="menu-card">
+      <h1 class="menu-title">Fruit Box</h1>
+
+      <div class="grid-toggle" id="grid-toggle">
+        <button class="grid-btn active" data-type="random">Random</button>
+        <button class="grid-btn" data-type="solvable">Solvable</button>
+      </div>
+
+      <div class="menu-btns">
+        <button class="menu-mode-btn primary" id="btn-play">Single Player</button>
+        <button class="menu-mode-btn primary" id="btn-vs">vs AI</button>
+        <button class="menu-mode-btn secondary" id="btn-watch">Watch AI</button>
+      </div>
+
+      <div class="stats-panel" id="stats-panel">
+        <div class="stats-loading">Loading stats…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single Player -->
+  <div id="screen-play" class="screen">
+    <div class="game-wrap">
+      <div class="hud">
+        <button class="hud-back" id="play-back">← Menu</button>
+        <div class="hud-center">
+          <div class="hud-stat"><span class="hud-label">Score</span><span class="hud-val" id="play-score">0</span></div>
+          <div class="hud-stat"><span class="hud-label">Time</span><span class="hud-val" id="play-timer">2:00</span></div>
+        </div>
+        <div class="hud-right">
+          <button class="icon-btn" id="play-pause" title="Pause">⏸</button>
+          <button class="icon-btn" id="play-restart" title="Restart">↺</button>
+        </div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="play-timerbar"></div></div>
+      <canvas id="canvas-play"></canvas>
+      <div class="over-overlay" id="play-over">
+        <div class="over-card">
+          <div class="over-reason" id="play-over-reason">Game Over</div>
+          <div class="over-score">Score: <strong id="play-over-score">0</strong></div>
+          <button class="menu-mode-btn primary" id="play-over-again">Play Again</button>
+          <button class="menu-mode-btn secondary" id="play-over-menu">Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VS AI -->
+  <div id="screen-vs" class="screen">
+    <div class="game-wrap vs-wrap">
+      <div class="hud">
+        <button class="hud-back" id="vs-back">← Menu</button>
+        <div class="hud-center vs-hud-center">
+          <div class="vs-score-side"><span class="vs-side-label">You</span><span class="hud-val" id="vs-human-score">0</span></div>
+          <div class="hud-stat"><span class="hud-label">Time</span><span class="hud-val" id="vs-timer">2:00</span></div>
+          <div class="vs-score-side"><span class="vs-side-label">AI</span><span class="hud-val" id="vs-ai-score">0</span></div>
+        </div>
+        <div class="hud-right">
+          <button class="icon-btn" id="vs-pause" title="Pause">⏸</button>
+          <button class="icon-btn" id="vs-restart" title="Restart">↺</button>
+        </div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="vs-timerbar"></div></div>
+      <div class="boards-row">
+        <div class="board-wrap">
+          <div class="board-label">You</div>
+          <canvas id="canvas-human"></canvas>
+        </div>
+        <div class="board-wrap">
+          <div class="board-label">AI (ONNX)</div>
+          <canvas id="canvas-ai-board"></canvas>
+        </div>
+      </div>
+      <div class="over-overlay" id="vs-over">
+        <div class="over-card">
+          <div class="over-reason" id="vs-over-reason">Game Over</div>
+          <div class="over-score">You <strong id="vs-over-human">0</strong> — AI <strong id="vs-over-ai">0</strong></div>
+          <button class="menu-mode-btn primary" id="vs-over-again">Play Again</button>
+          <button class="menu-mode-btn secondary" id="vs-over-menu">Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Watch AI -->
+  <div id="screen-watch" class="screen">
+    <div class="game-wrap">
+      <div class="hud">
+        <button class="hud-back" id="watch-back">← Menu</button>
+        <div class="hud-center">
+          <div class="hud-stat"><span class="hud-label">AI Score</span><span class="hud-val" id="watch-score">0</span></div>
+          <div class="hud-stat"><span class="hud-label">Time</span><span class="hud-val" id="watch-timer">2:00</span></div>
+        </div>
+        <div class="hud-right">
+          <button class="icon-btn" id="watch-restart" title="Restart">↺</button>
+        </div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="watch-timerbar"></div></div>
+      <canvas id="canvas-watch"></canvas>
+      <div class="over-overlay" id="watch-over">
+        <div class="over-card">
+          <div class="over-reason">Game Over</div>
+          <div class="over-score">AI Score: <strong id="watch-over-score">0</strong></div>
+          <button class="menu-mode-btn primary" id="watch-over-again">Watch Again</button>
+          <button class="menu-mode-btn secondary" id="watch-over-menu">Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

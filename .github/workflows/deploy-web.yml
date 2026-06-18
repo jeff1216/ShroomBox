@@ -24,14 +24,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Cache ONNX model
+        id: onnx-cache
+        uses: actions/cache@v4
         with:
-          python-version: "3.13"
+          path: web_assets/fruitbox_policy.onnx
+          key: hf-onnx-${{ env.HF_MODEL_REPO }}-main
+        env:
+          HF_MODEL_REPO: Fungster/fruitbox-ppo
 
-      - name: Install build dependencies
-        run: uv sync --extra cpu --group web --all-packages
+      - name: Download ONNX model
+        if: steps.onnx-cache.outputs.cache-hit != 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          uv run --with huggingface_hub python .github/scripts/download_hf_onnx.py
 
-      - name: Build with pygbag
+      - name: Build HTML5 web app
         run: uv run python tools/build_web.py
 
       - name: Setup Pages
@@ -40,7 +52,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: src/build/web
+          path: dist/web
 
       - name: Deploy to GitHub Pages
         id: deployment
