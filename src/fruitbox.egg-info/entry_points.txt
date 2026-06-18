@@ -1,4 +1,0 @@
-[console_scripts]
-fruitbox = fruitbox.menu:main
-fruitbox-train = fruitbox.train:main
-fruitbox-watch = fruitbox.watch:main

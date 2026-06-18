@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fruitbox-train"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fruitbox-core",
+    "fruitbox-pygame",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "sb3-contrib",
+    "stable-baselines3",
+    "torch",
+]
+cu128 = [
+    "sb3-contrib",
+    "stable-baselines3",
+    "torch",
+]
+
+[project.scripts]
+fruitbox-train = "fruitbox_train.train:main"
+fruitbox-watch = "fruitbox_train.watch:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fruitbox_train"]

@@ -1,64 +1,36 @@
-[build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "fruitbox"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = [
-    "gymnasium",
-    "numpy",
-    "pygame-ce",
-    "pygame_gui",
-]
-
-[project.scripts]
-fruitbox       = "fruitbox.menu:main"
-fruitbox-train = "fruitbox.train:main"
-fruitbox-watch = "fruitbox.watch:main"
+dependencies = []
 
 [project.optional-dependencies]
-cpu = [
-    "sb3-contrib",
-    "stable-baselines3",
-    "torch",
-]
-cu128 = [
-    "sb3-contrib",
-    "stable-baselines3",
-    "torch",
-]
+cpu = ["torch"]
+cu128 = ["torch"]
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+fruitbox-app-onnx  = { workspace = true }
+fruitbox-app-torch = { workspace = true }
+fruitbox-core      = { workspace = true }
+fruitbox-pygame    = { workspace = true }
+fruitbox-train     = { workspace = true }
+fruitbox-web       = { workspace = true }
+torch = { index = "pytorch-cpu" }
 
 [dependency-groups]
 build = ["huggingface_hub", "pyinstaller"]
 plot  = ["matplotlib", "pandas", "tensorboard"]
 web   = ["onnxruntime", "onnxscript", "pygbag"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["fruitbox*", "fruitbox_web*"]
-
 [tool.uv]
 conflicts = [
-    [
-        { extra = "cpu" },
-        { extra = "cu128" },
-    ],
-]
-
-[tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu", extra = "cpu" },
-    { index = "pytorch-cu128", extra = "cu128" },
+    [{ extra = "cpu" }, { extra = "cu128" }],
 ]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url  = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[[tool.uv.index]]
-name = "pytorch-cu128"
-url  = "https://download.pytorch.org/whl/cu128"
 explicit = true

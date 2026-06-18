@@ -1,21 +1,26 @@
 name: Build Windows executable
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [master, main]
     tags: ["v*"]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  actions: write
 
 env:
   HF_MODEL_REPO: Fungster/fruitbox-ppo
   HF_MODEL_REVISION: main
   HF_MODEL_FILE: fruitbox_ppo_final.zip
+  HF_ONNX_FILE: fruitbox_policy.onnx
 
 jobs:
   build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: windows-latest
 
     steps:
@@ -30,8 +35,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
-        run: uv sync --group build --no-sources
+      - name: Install build tools
+        run: uv sync --package fruitbox --group build
 
       - name: Add venv to PATH
         shell: pwsh
@@ -65,35 +70,88 @@ jobs:
         id: model-cache
         with:
           path: fruitbox_ppo_final.zip
-          key: hf-model-${{ env.HF_MODEL_REPO }}-${{ steps.model.outputs.sha }}
+          key: hf-zip-${{ env.HF_MODEL_REPO }}-${{ steps.model.outputs.sha }}
 
-      - name: Download trained model
+      - uses: actions/cache@v4
+        id: onnx-cache
+        with:
+          path: fruitbox_policy.onnx
+          key: hf-onnx-${{ env.HF_MODEL_REPO }}-${{ steps.model.outputs.sha }}
+
+      - name: Download trained model (zip)
         if: steps.model-cache.outputs.cache-hit != 'true'
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           FRUITBOX_MODEL_MIRROR_URL: ${{ secrets.FRUITBOX_MODEL_MIRROR_URL }}
         run: python .github/scripts/download_hf_model.py
 
-      - name: Build executable
+      - name: Download ONNX model
+        if: steps.onnx-cache.outputs.cache-hit != 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          FRUITBOX_MODEL_MIRROR_URL: ${{ secrets.FRUITBOX_ONNX_MIRROR_URL }}
+        run: python .github/scripts/download_hf_onnx.py
+
+      - name: Build fruitbox-onnx.exe
         run: |
-          uv run --extra cpu python -m PyInstaller --onefile --windowed --name FruitBox `
+          uv sync --package fruitbox-app-onnx --package fruitbox-pygame --package fruitbox-core --package fruitbox --group build
+          uv run --package fruitbox-app-onnx python -m PyInstaller --onefile --windowed --name fruitbox-onnx `
+            --add-data "fruitbox_policy.onnx;." `
+            --add-data "packages/fruitbox-pygame/src/fruitbox_pygame/assets;assets" `
+            --collect-data fruitbox_pygame `
+            --collect-data pygame_gui `
+            --add-binary "C:\Windows\System32\VCRUNTIME140.dll;." `
+            --add-binary "C:\Windows\System32\VCRUNTIME140_1.dll;." `
+            packages/fruitbox-app-onnx/src/fruitbox_app_onnx/__main__.py
+          python .github/scripts/check_exe_size.py dist/fruitbox-onnx.exe
+
+      - name: Verify CPU torch
+        run: |
+          uv sync --extra cpu --package fruitbox-app-torch --package fruitbox-pygame --package fruitbox-core --package fruitbox --group build
+          python .github/scripts/verify_torch_cpu.py
+
+      - name: Build fruitbox.exe (PyTorch)
+        run: |
+          uv run --package fruitbox-app-torch --extra cpu python -m PyInstaller --onefile --windowed --name fruitbox `
             --add-data "fruitbox_ppo_final.zip;." `
-            --add-data "src/fruitbox/assets;assets" `
+            --add-data "packages/fruitbox-pygame/src/fruitbox_pygame/assets;assets" `
+            --collect-data fruitbox_pygame `
             --collect-data pygame_gui `
             --collect-data stable_baselines3 `
             --collect-data sb3_contrib `
             --add-binary "C:\Windows\System32\VCRUNTIME140.dll;." `
             --add-binary "C:\Windows\System32\VCRUNTIME140_1.dll;." `
-            src/fruitbox/__main__.py
+            packages/fruitbox-app-torch/src/fruitbox_app_torch/__main__.py
+          python .github/scripts/check_exe_size.py dist/fruitbox.exe
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: FruitBox-windows
-          path: dist/FruitBox.exe
+          path: |
+            dist/fruitbox.exe
+            dist/fruitbox-onnx.exe
+
+  release:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download workflow artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FruitBox-windows
+          path: dist
 
       - name: Publish commit release
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
@@ -116,15 +174,19 @@ jobs:
           $releaseNotes = @"
           Automated Windows build from ``${{ github.ref_name }}`` @ [$shortSha]($commitUrl).
 
-          Download this build: [$buildTag](${{ github.server_url }}/${{ github.repository }}/releases/tag/$buildTag)
+          Downloads:
+          - [fruitbox.exe](${{ github.server_url }}/${{ github.repository }}/releases/download/$buildTag/fruitbox.exe) — PyTorch / SB3
+          - [fruitbox-onnx.exe](${{ github.server_url }}/${{ github.repository }}/releases/download/$buildTag/fruitbox-onnx.exe) — ONNX (no PyTorch)
+
+          Build tag: [$buildTag](${{ github.server_url }}/${{ github.repository }}/releases/tag/$buildTag)
           "@
 
           gh release view $buildTag 2>$null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $buildTag dist/FruitBox.exe --clobber
+            gh release upload $buildTag dist/fruitbox.exe dist/fruitbox-onnx.exe --clobber
             gh release edit $buildTag --latest --prerelease=false --notes $releaseNotes
           } else {
-            gh release create $buildTag dist/FruitBox.exe `
+            gh release create $buildTag dist/fruitbox.exe dist/fruitbox-onnx.exe `
               --title "Build $shortSha" `
               --notes $releaseNotes `
               --latest
@@ -134,5 +196,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/FruitBox.exe
+          files: |
+            dist/fruitbox.exe
+            dist/fruitbox-onnx.exe
           generate_release_notes: true
