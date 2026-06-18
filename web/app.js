@@ -3,7 +3,7 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 const DEFAULT_ROWS = 10, DEFAULT_COLS = 17;
 const CELL = 46, GAP = 2;
-const VS_CELL = 36, VS_GAP = 2;
+const VS_CELL = 46, VS_GAP = 2;
 const DEFAULT_TIME = 120;
 const AI_INTERVAL_MS = 480;
 const ONNX_URL = './fruitbox_policy.onnx';
@@ -570,6 +570,7 @@ function setupPlayInput() {
   $('play-back').onclick = () => { cancelAnimationFrame(animId); showMenu(); };
   $('play-over-again').onclick = () => $('play-restart').onclick();
   $('play-over-menu').onclick  = () => showMenu();
+  $('play-over-close').onclick = () => hideOver('play-over');
 }
 
 // ── VS AI ─────────────────────────────────────────────────────────────────────
@@ -719,6 +720,7 @@ function setupVsInput() {
   $('vs-back').onclick       = () => { cancelAnimationFrame(animId); showMenu(); };
   $('vs-over-again').onclick = () => $('vs-restart').onclick();
   $('vs-over-menu').onclick  = () => showMenu();
+  $('vs-over-close').onclick = () => hideOver('vs-over');
 }
 
 // ── Watch AI ──────────────────────────────────────────────────────────────────
@@ -805,6 +807,7 @@ function setupWatchInput() {
   $('watch-back').onclick       = () => { cancelAnimationFrame(animId); showMenu(); };
   $('watch-over-again').onclick = () => $('watch-restart').onclick();
   $('watch-over-menu').onclick  = () => showMenu();
+  $('watch-over-close').onclick = () => hideOver('watch-over');
 }
 
 // ── Settings overlay ──────────────────────────────────────────────────────────

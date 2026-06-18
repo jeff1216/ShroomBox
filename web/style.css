@@ -135,7 +135,7 @@ html, body {
 
 /* ── Icon images ────────────────────────────────────────────────────────────── */
 .icon-img {
-  width: 18px; height: 18px; display: block;
+  width: 24px; height: 24px; display: block;
   object-fit: contain;
   filter: invert(0.78);
   pointer-events: none;
@@ -151,10 +151,10 @@ html, body {
 .pill-arrow .icon-img { width: 22px; height: 22px; }
 
 /* HUD pause/restart icons */
-.hud-right .icon-img { width: 20px; height: 20px; }
+.hud-right .icon-img { width: 24px; height: 24px; } /* same as base, kept for specificity */
 
 /* Gear in pill uses accent color */
-.pill-gear-icon { width: 14px; height: 14px; filter: invert(0.55) sepia(1) saturate(4) hue-rotate(185deg) brightness(1.2); }
+.pill-gear-icon { width: 20px; height: 20px; filter: invert(0.55) sepia(1) saturate(4) hue-rotate(185deg) brightness(1.2); }
 [data-theme="light"] .pill-gear-icon { filter: invert(0.1) sepia(1) saturate(6) hue-rotate(185deg) brightness(0.8); }
 
 /* ── Pill selector ──────────────────────────────────────────────────────────── */
@@ -311,6 +311,7 @@ canvas {
 .over-overlay.show { display: flex; }
 
 .over-card {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 16px;
   padding: 36px 48px;
   background: var(--card-bg); border: 2px solid var(--card-border);
@@ -319,6 +320,14 @@ canvas {
 .over-card.win  { border-color: var(--win-border);  background: var(--win-bg); }
 .over-card.lose { border-color: var(--lose-border); background: var(--lose-bg); }
 .over-card.tie  { border-color: var(--tie-border);  background: var(--tie-bg); }
+
+.over-close {
+  position: absolute; top: 10px; right: 12px;
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; line-height: 1; color: var(--text-dim);
+  padding: 2px 6px; border-radius: 4px;
+}
+.over-close:hover { color: var(--text); background: var(--btn-bg); }
 
 .over-reason { font-size: 26px; font-weight: 700; }
 .over-score  { font-size: 18px; color: var(--text-dim); }
