@@ -115,7 +115,7 @@ html, body {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  min-width: 360px;
+  min-width: 420px;
 }
 
 .menu-top {
