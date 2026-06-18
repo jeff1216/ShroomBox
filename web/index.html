@@ -87,7 +87,9 @@
         </div>
       </div>
       <div class="timer-bar-wrap"><div class="timer-bar" id="play-timerbar"></div></div>
-      <canvas id="canvas-play"></canvas>
+      <div class="board-canvas-wrap" id="play-canvas-wrap">
+        <canvas id="canvas-play"></canvas>
+      </div>
       <div class="over-overlay" id="play-over">
         <div class="over-card">
           <div class="over-reason" id="play-over-reason">Game Over</div>
@@ -125,7 +127,9 @@
       <div class="boards-row">
         <div class="board-wrap">
           <div class="board-label">You</div>
-          <canvas id="canvas-human"></canvas>
+          <div class="board-canvas-wrap" id="vs-human-canvas-wrap">
+            <canvas id="canvas-human"></canvas>
+          </div>
         </div>
         <div class="board-wrap">
           <div class="board-label">AI (ONNX)</div>

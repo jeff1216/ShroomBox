@@ -287,8 +287,8 @@ canvas {
 .board-canvas-wrap {
   position: relative;
 }
+.board-canvas-wrap.board-paused::after,
 .board-canvas-wrap.board-covered::after {
-  content: 'HIDDEN';
   position: absolute; inset: 0;
   background: var(--card-bg);
   border-radius: 8px;
@@ -296,8 +296,9 @@ canvas {
   display: flex; align-items: center; justify-content: center;
   font-size: 36px; font-weight: 700; letter-spacing: 0.04em;
   font-family: system-ui, sans-serif;
-  color: var(--text-dim);
 }
+.board-canvas-wrap.board-paused::after { content: 'PAUSED'; color: var(--text); }
+.board-canvas-wrap.board-covered::after { content: 'HIDDEN'; color: var(--text-dim); }
 
 /* ── Game-over overlay ──────────────────────────────────────────────────────── */
 .over-overlay {

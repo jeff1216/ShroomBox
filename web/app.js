@@ -445,13 +445,6 @@ function drawBoard(canvas, grid, rows, cols, cellSize, gap, {
     ctx.strokeRect(sx+1, sy+1, sw-2, sh-2);
   }
 
-  if (paused) {
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = C.text;
-    ctx.font = `700 ${cellSize}px system-ui, sans-serif`;
-    ctx.fillText('PAUSED', canvas.width/2, canvas.height/2);
-  }
 }
 
 // ── Timer bar ─────────────────────────────────────────────────────────────────
@@ -480,6 +473,7 @@ function startPlay(gridType, opts = {}) {
   playScore = 0; playTimeRemaining = playTimeLimit;
   playGameOver = false; playPaused = false;
   $('play-pause-icon').src = './assets/pause.circle.png';
+  $('play-canvas-wrap').classList.remove('board-paused');
   playGameSeed = py('play_seed');
   playGameStart = performance.now();
   dragStart = null; dragEnd = null;
@@ -565,8 +559,8 @@ function setupPlayInput() {
 
   $('play-pause').onclick = () => {
     if (playGameOver) return;
-    if (playPaused) { py('play_resume'); playPaused = false; $('play-pause-icon').src = './assets/pause.circle.png'; lastTs = null; }
-    else            { py('play_pause');  playPaused = true;  $('play-pause-icon').src = './assets/play.circle.png'; }
+    if (playPaused) { py('play_resume'); playPaused = false; $('play-pause-icon').src = './assets/pause.circle.png'; $('play-canvas-wrap').classList.remove('board-paused'); lastTs = null; }
+    else            { py('play_pause');  playPaused = true;  $('play-pause-icon').src = './assets/play.circle.png';  $('play-canvas-wrap').classList.add('board-paused'); }
   };
   $('play-restart').onclick = () => {
     cancelAnimationFrame(animId);
@@ -586,6 +580,7 @@ function startVs(gridType, seed = null) {
   vsHumanScore = 0; vsAiScore = 0; vsTimeRemaining = DEFAULT_TIME;
   vsHumanOver = false; vsAiOver = false; vsGameOver = false; vsPaused = false;
   $('vs-pause-icon').src = './assets/pause.circle.png';
+  $('vs-human-canvas-wrap').classList.remove('board-paused');
   $('vs-ai-board-wrap').classList.remove('board-covered');
   $('vs-toggle-ai-icon').src = './assets/eye.png';
   $('vs-toggle-ai-board').title = 'Hide AI board';
@@ -713,8 +708,8 @@ function setupVsInput() {
 
   $('vs-pause').onclick = () => {
     if (vsGameOver) return;
-    if (vsPaused) { py('vs_resume'); vsPaused = false; $('vs-pause-icon').src = './assets/pause.circle.png'; lastTs = null; }
-    else          { py('vs_pause');  vsPaused = true;  $('vs-pause-icon').src = './assets/play.circle.png'; }
+    if (vsPaused) { py('vs_resume'); vsPaused = false; $('vs-pause-icon').src = './assets/pause.circle.png'; $('vs-human-canvas-wrap').classList.remove('board-paused'); lastTs = null; }
+    else          { py('vs_pause');  vsPaused = true;  $('vs-pause-icon').src = './assets/play.circle.png';  $('vs-human-canvas-wrap').classList.add('board-paused'); }
   };
   $('vs-restart').onclick  = () => {
     cancelAnimationFrame(animId);
