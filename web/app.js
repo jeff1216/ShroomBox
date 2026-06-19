@@ -591,9 +591,9 @@ function startVs(gridType, seed = null) {
   vsHumanOver = false; vsAiOver = false; vsGameOver = false; vsPaused = false;
   $('vs-pause-icon').src = './assets/pause.circle.png';
   $('vs-human-canvas-wrap').classList.remove('board-paused');
-  $('vs-ai-board-wrap').classList.remove('board-covered');
-  $('vs-toggle-ai-icon').src = './assets/eye.png';
-  $('vs-toggle-ai-board').title = 'Hide AI board';
+  $('vs-ai-board-wrap').classList.add('board-covered');
+  $('vs-toggle-ai-icon').src = './assets/eye.slash.png';
+  $('vs-toggle-ai-board').title = 'Show AI board';
   vsGameSeed  = py('vs_seed');
   vsGameStart = performance.now();
   dragStart = null; dragEnd = null;
