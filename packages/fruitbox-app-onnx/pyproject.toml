@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-fruitbox-onnx = "fruitbox_app_onnx.__main__:main"
+fruitbox = "fruitbox_app_onnx.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fruitbox_app_onnx"]

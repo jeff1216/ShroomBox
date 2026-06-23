@@ -58,9 +58,9 @@ This repo is a [uv workspace](https://docs.astral.sh/uv/concepts/projects/worksp
 
 ```bash
 uv sync --extra cpu --all-packages   # install everything (CPU PyTorch)
-uv run fruitbox                      # PyTorch desktop app
-uv run fruitbox-onnx                 # ONNX desktop app
+uv run fruitbox                      # ONNX desktop app
+uv run fruitbox-pytorch              # PyTorch / SB3 desktop app
 uv run fruitbox-train --watch        # train with live preview
 ```
 
-Windows executables are built in CI via PyInstaller (`fruitbox.exe` and `fruitbox-onnx.exe`). The ONNX model is bundled from [Hugging Face](https://huggingface.co/Fungster/fruitbox-ppo/blob/main/fruitbox_policy.onnx).
+Windows executables are built in CI via PyInstaller (`fruitbox.exe` and `fruitbox-pytorch.exe`). The ONNX model is bundled from [Hugging Face](https://huggingface.co/Fungster/fruitbox-ppo/blob/main/fruitbox_policy.onnx).
