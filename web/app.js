@@ -292,6 +292,17 @@ async function initPyodide() {
   setProgress(55, 'Loading game engine…');
   await loadFruitboxCore();
 
+  if (opfsMount) {
+    try {
+      await pyodide.runPythonAsync(`
+import fruitbox_core.stats as _s
+_s._PATH = "/fruitbox/fruitbox_stats.db"
+`);
+    } catch (e) {
+      console.warn('Failed to configure stats path:', e);
+    }
+  }
+
   setProgress(75, 'Running init…');
   await pyodide.runPythonAsync(PYTHON_HELPERS);
 
@@ -306,10 +317,6 @@ async function mountOPFS() {
     const opfsRoot = await navigator.storage.getDirectory();
     const dir = await opfsRoot.getDirectoryHandle('fruitbox', { create: true });
     opfsMount = await pyodide.mountNativeFS('/fruitbox', dir);
-    await pyodide.runPythonAsync(`
-import fruitbox_core.stats as _s
-_s._PATH = "/fruitbox/fruitbox_stats.db"
-`);
   } catch (e) {
     console.warn('OPFS unavailable, stats will not persist:', e);
   }
