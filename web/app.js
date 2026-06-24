@@ -471,13 +471,36 @@ function updateTimerBar(barId, remaining, timeLimit) {
     remaining > 10 ? 'var(--timer-warn)' : 'var(--timer-danger)';
 }
 
+// ── Grid loading overlay ──────────────────────────────────────────────────────
+function drawGridOverlay(...canvases) {
+  for (const canvas of canvases) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = C.text;
+    ctx.font = '700 36px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Generating…', canvas.width / 2, canvas.height / 2);
+  }
+}
+
 // ── Single player ─────────────────────────────────────────────────────────────
-function startPlay(gridType, opts = {}) {
+async function startPlay(gridType, opts = {}) {
   const rows      = opts.rows      ?? DEFAULT_ROWS;
   const cols      = opts.cols      ?? DEFAULT_COLS;
   playTimeLimit   = opts.timeLimit ?? DEFAULT_TIME;
   const seed      = opts.seed      ?? null;
   playIsCustom    = opts.isCustom  ?? false;
+
+  if (opts.overlay) {
+    $('play-canvas-wrap').classList.remove('board-paused');
+    drawGridOverlay($('canvas-play'));
+  } else {
+    setProgress(100, 'Generating grid…');
+    showScreen('screen-loading');
+  }
+  await new Promise(r => setTimeout(r, 0));
 
   py('play_init', gridType, seed, rows, cols, playTimeLimit);
   playRows = py('play_rows');
@@ -615,7 +638,7 @@ function setupPlayInput() {
   $('play-restart').onclick = () => {
     cancelAnimationFrame(animId);
     startPlay(selectedGridType() === 'custom' ? customSettings.gridBase : selectedGridType(),
-      selectedGridType() === 'custom' ? { ...customSettings, isCustom: true } : {});
+      selectedGridType() === 'custom' ? { ...customSettings, isCustom: true, overlay: true } : { overlay: true });
   };
   $('play-back').onclick = () => { cancelAnimationFrame(animId); showMenu(); };
   $('play-over-again').onclick = () => $('play-restart').onclick();
@@ -624,7 +647,16 @@ function setupPlayInput() {
 }
 
 // ── VS AI ─────────────────────────────────────────────────────────────────────
-function startVs(gridType, seed = null) {
+async function startVs(gridType, seed = null, overlay = false) {
+  if (overlay) {
+    $('vs-human-canvas-wrap').classList.remove('board-paused');
+    drawGridOverlay($('canvas-human'), $('canvas-ai-board'));
+  } else {
+    setProgress(100, 'Generating grid…');
+    showScreen('screen-loading');
+  }
+  await new Promise(r => setTimeout(r, 0));
+
   py('vs_init', gridType, seed);
   vsHumanGrid = py('vs_human_grid');
   vsAiGrid    = py('vs_ai_grid');
@@ -797,7 +829,7 @@ function setupVsInput() {
   $('vs-restart').onclick  = () => {
     cancelAnimationFrame(animId);
     const gt = selectedGridType() === 'custom' ? customSettings.gridBase : selectedGridType();
-    startVs(gt);
+    startVs(gt, null, true);
   };
   $('vs-back').onclick       = () => { cancelAnimationFrame(animId); showMenu(); };
   $('vs-over-again').onclick = () => $('vs-restart').onclick();
