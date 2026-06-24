@@ -1184,6 +1184,8 @@ function setupMenuInput() {
   $('btn-settings-overlay').onclick = openSettings;
   $('btn-stats-overlay').onclick    = openStats;
   $('btn-help').onclick             = () => openOverlay('overlay-help');
+  $('play-settings').onclick        = openSettings;
+  $('vs-settings').onclick          = openSettings;
   $('btn-dark-mode').onclick        = () => applyTheme(!darkMode);
 
   // close by backdrop or × button
