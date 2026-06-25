@@ -46,7 +46,7 @@ def build():
     os.makedirs(OUT_DIR)
 
     # Copy static web assets
-    for f in ("index.html", "style.css", "app.js", "coi-serviceworker.js"):
+    for f in ("index.html", "style.css", "app.js", "coi-serviceworker.js", "favicon.svg"):
         shutil.copy2(os.path.join(WEB_SRC, f), os.path.join(OUT_DIR, f))
         print(f"  Copied {f}")
 

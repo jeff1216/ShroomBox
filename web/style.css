@@ -130,7 +130,9 @@ html, body {
 .menu-title {
   font-size: 48px; font-weight: 700; letter-spacing: -0.5px; text-align: center;
   padding-bottom: 24px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
 }
+.menu-logo { width: 52px; height: 52px; }
 
 .menu-icons {
   display: flex; gap: 4px; align-items: center;
