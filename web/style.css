@@ -30,6 +30,7 @@
   --lose-border:  #b93c3c;
   --tie-bg:       #32290a;
   --tie-border:   #b48c1e;
+  --start-overlay-bg: #1a3320;
 }
 
 [data-theme="light"] {
@@ -57,6 +58,7 @@
   --timer-danger: #b83232;
   --win-bg:       #e8f5ee;
   --win-border:   #16a34a;
+  --start-overlay-bg: #d4edd9;
   --lose-bg:      #fae8e8;
   --lose-border:  #b93c3c;
   --tie-bg:       #faf3e0;

@@ -81,13 +81,13 @@ let pyodide = null, onnxSession = null, opfsMount = null;
 
 let playRows = DEFAULT_ROWS, playCols = DEFAULT_COLS, playTimeLimit = DEFAULT_TIME;
 let playGrid = null, playScore = 0, playTimeRemaining = 0;
-let playGameOver = false, playPaused = false;
+let playGameOver = false, playPaused = false, playWaitingToStart = false;
 let playGameSeed = null, playGameStart = 0, playIsCustom = false;
 
 let vsHumanGrid = null, vsAiGrid = null;
 let vsHumanScore = 0, vsAiScore = 0, vsTimeRemaining = 0;
-let vsHumanOver = false, vsAiOver = false, vsGameOver = false;
-let vsGameSeed = null, vsGameStart = 0, vsPaused = false;
+let vsHumanOver = false, vsAiOver = false, vsGameOver = false, vsWaitingToStart = false;
+let vsGameSeed = null, vsGameStart = null, vsPaused = false;
 let vsMobilePovAi = false;
 let lastAiMoveTs = 0, aiHighlight = null;
 
@@ -523,7 +523,7 @@ async function startPlay(gridType, opts = {}) {
   $('play-canvas-wrap').classList.remove('board-paused');
   playGameSeed = py('play_seed');
   setGameUrl('single', playGameSeed, gridType);
-  playGameStart = performance.now();
+  playGameStart = null;
   dragStart = null; dragEnd = null;
 
   const canvas = $('canvas-play');
@@ -533,6 +533,7 @@ async function startPlay(gridType, opts = {}) {
   $('play-timer').textContent = fmt(playTimeLimit);
   updateTimerBar('play-timerbar', playTimeLimit, playTimeLimit);
 
+  playWaitingToStart = true;
   showScreen('screen-play');
   lastTs = null;
   if (animId) cancelAnimationFrame(animId);
@@ -547,6 +548,25 @@ function playLoop(ts) {
   if (playGameOver) {
     drawBoard($('canvas-play'), playGrid, playRows, playCols, CELL, GAP,
       { drag: bounds, validDrag: null, paused: false });
+    animId = requestAnimationFrame(playLoop);
+    return;
+  }
+
+  if (playWaitingToStart) {
+    const canvas = $('canvas-play');
+    const tmp = document.createElement('canvas');
+    tmp.width = canvas.width; tmp.height = canvas.height;
+    drawBoard(tmp, playGrid, playRows, playCols, CELL, GAP, { drag: null, validDrag: null, paused: false });
+    const ctx = canvas.getContext('2d');
+    ctx.filter = 'blur(8px)';
+    ctx.drawImage(tmp, 0, 0);
+    ctx.filter = 'none';
+    ctx.fillStyle = C.text;
+    ctx.font = '700 36px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Click to start', canvas.width / 2, canvas.height / 2);
+    lastTs = null;
     animId = requestAnimationFrame(playLoop);
     return;
   }
@@ -584,7 +604,7 @@ function endPlay(reason) {
   try {
     const gamemode = playIsCustom ? 'custom' : 'single_player';
     py('stats_record', gamemode, selectedGridType() === 'custom' ? customSettings.gridBase : selectedGridType(),
-      playScore, playGameSeed, (performance.now() - playGameStart) / 1000);
+      playScore, playGameSeed, playGameStart ? (performance.now() - playGameStart) / 1000 : 0);
     syncStats();
   } catch(e) { console.warn('stats_record failed', e); }
 }
@@ -592,7 +612,9 @@ function endPlay(reason) {
 function setupPlayInput() {
   const canvas = $('canvas-play');
   canvas.addEventListener('mousedown', e => {
-    if (playPaused || anyOverlayOpen()) return;
+    if (anyOverlayOpen()) return;
+    if (playWaitingToStart) { playWaitingToStart = false; playGameStart = performance.now(); lastTs = null; return; }
+    if (playPaused) return;
     const cell = pixelToCell(canvas, e.clientX, e.clientY, CELL, GAP, playRows, playCols);
     if (cell) { dragStart = cell; dragEnd = cell; }
   });
@@ -697,9 +719,10 @@ async function startVs(gridType, seed = null, overlay = false) {
   }
   vsGameSeed  = py('vs_seed');
   setGameUrl('vs', vsGameSeed, gridType);
-  vsGameStart = performance.now();
+  vsGameStart = null;
+  vsWaitingToStart = true;
   dragStart = null; dragEnd = null;
-  lastAiMoveTs = performance.now() + 800;
+  lastAiMoveTs = null;
   aiHighlight = null;
 
   setupCanvas($('canvas-human'),   DEFAULT_ROWS, DEFAULT_COLS, VS_CELL, VS_GAP);
@@ -719,6 +742,33 @@ async function startVs(gridType, seed = null, overlay = false) {
 function vsLoop(ts) {
   animId = null;
   if (vsGameOver) return;
+
+  if (vsWaitingToStart) {
+    const humanCanvas = $('canvas-human');
+    const humanTmp = document.createElement('canvas');
+    humanTmp.width = humanCanvas.width; humanTmp.height = humanCanvas.height;
+    drawBoard(humanTmp, vsHumanGrid, DEFAULT_ROWS, DEFAULT_COLS, VS_CELL, VS_GAP, { drag: null, validDrag: null, paused: false });
+    const ctx = humanCanvas.getContext('2d');
+    ctx.filter = 'blur(8px)';
+    ctx.drawImage(humanTmp, 0, 0);
+    ctx.filter = 'none';
+    ctx.fillStyle = C.text;
+    ctx.font = '700 28px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Click to start', humanCanvas.width / 2, humanCanvas.height / 2);
+    const aiCanvas = $('canvas-ai-board');
+    const aiTmp = document.createElement('canvas');
+    aiTmp.width = aiCanvas.width; aiTmp.height = aiCanvas.height;
+    drawBoard(aiTmp, vsAiGrid, DEFAULT_ROWS, DEFAULT_COLS, VS_CELL, VS_GAP, {});
+    const aiCtx = aiCanvas.getContext('2d');
+    aiCtx.filter = 'blur(8px)';
+    aiCtx.drawImage(aiTmp, 0, 0);
+    aiCtx.filter = 'none';
+    lastTs = null;
+    animId = requestAnimationFrame(vsLoop);
+    return;
+  }
 
   const dt = lastTs === null ? 0 : (ts - lastTs) / 1000;
   lastTs = ts;
@@ -790,7 +840,7 @@ function endVs() {
   showOver('vs-over', cls);
   try {
     const gt = selectedGridType() === 'custom' ? customSettings.gridBase : selectedGridType();
-    py('stats_record', 'vs_ai', gt, h, vsGameSeed, (performance.now() - vsGameStart) / 1000, a);
+    py('stats_record', 'vs_ai', gt, h, vsGameSeed, vsGameStart ? (performance.now() - vsGameStart) / 1000 : 0, a);
     syncStats();
   } catch(e) { console.warn('stats_record failed', e); }
 }
@@ -798,7 +848,9 @@ function endVs() {
 function setupVsInput() {
   const canvas = $('canvas-human');
   canvas.addEventListener('mousedown', e => {
-    if (vsGameOver || vsHumanOver || vsPaused || anyOverlayOpen()) return;
+    if (anyOverlayOpen()) return;
+    if (vsWaitingToStart) { vsWaitingToStart = false; vsGameStart = performance.now(); lastAiMoveTs = performance.now() + 800; lastTs = null; return; }
+    if (vsGameOver || vsHumanOver || vsPaused) return;
     const cell = pixelToCell(canvas, e.clientX, e.clientY, VS_CELL, VS_GAP, DEFAULT_ROWS, DEFAULT_COLS);
     if (cell) { dragStart = cell; dragEnd = cell; }
   });
