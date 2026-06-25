@@ -653,6 +653,16 @@ function setupPlayInput() {
   };
   $('play-back').onclick = () => { cancelAnimationFrame(animId); showMenu(); };
   $('play-over-again').onclick = () => $('play-restart').onclick();
+  $('play-over-share').onclick = () => {
+    const elapsed = Math.floor(playTimeLimit - playTimeRemaining);
+    const timeStr = `${elapsed}s`;
+    const text = `I've reached ${playScore} on ShroomBox in ${timeStr}\nTry beating me here! ${location.href}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = $('play-over-share');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Share'; }, 2000);
+    });
+  };
   $('play-over-menu').onclick  = () => showMenu();
   $('play-over-close').onclick = () => hideOver('play-over');
 }
@@ -845,6 +855,15 @@ function setupVsInput() {
   };
   $('vs-back').onclick       = () => { cancelAnimationFrame(animId); showMenu(); };
   $('vs-over-again').onclick = () => $('vs-restart').onclick();
+  $('vs-over-share').onclick = () => {
+    const elapsed = Math.floor(DEFAULT_TIME - vsTimeRemaining);
+    const text = `I scored ${vsHumanScore} on ShroomBox vs AI in ${elapsed}s\nTry beating me here! ${location.href}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = $('vs-over-share');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Share'; }, 2000);
+    });
+  };
   $('vs-over-menu').onclick  = () => showMenu();
   $('vs-over-close').onclick = () => hideOver('vs-over');
 }
