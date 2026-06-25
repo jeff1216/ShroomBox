@@ -44,6 +44,7 @@ const KEY_DEFAULTS = { pause: 'Space', restart: 'KeyR', menu: 'Escape' };
 let keybinds = { ...KEY_DEFAULTS };
 
 let vsAiDefaultHidden = true;
+let showValidHighlight = true;
 
 function loadSettings() {
   try {
@@ -52,6 +53,8 @@ function loadSettings() {
   } catch { keybinds = { ...KEY_DEFAULTS }; }
   const savedHidden = localStorage.getItem('vsAiDefaultHidden');
   if (savedHidden !== null) vsAiDefaultHidden = savedHidden !== '0';
+  const savedHighlight = localStorage.getItem('showValidHighlight');
+  if (savedHighlight !== null) showValidHighlight = savedHighlight !== '0';
 }
 
 function saveSettings() {
@@ -462,8 +465,9 @@ function drawBoard(canvas, grid, rows, cols, cellSize, gap, {
     const [r1,c1,r2,c2] = drag;
     const sx = (rot ? r1 : c1)*step, sy = (rot ? c1 : r1)*step;
     const sw = (rot ? r2-r1 : c2-c1)*step+cellSize, sh = (rot ? c2-c1 : r2-r1)*step+cellSize;
-    ctx.fillStyle   = validDrag === true  ? C.validFill  : validDrag === false ? C.badFill  : C.selFill;
-    ctx.strokeStyle = validDrag === true  ? C.validBorder: validDrag === false ? C.badBorder: C.selBorder;
+    const eff = showValidHighlight ? validDrag : null;
+    ctx.fillStyle   = eff === true  ? C.validFill  : eff === false ? C.badFill  : C.selFill;
+    ctx.strokeStyle = eff === true  ? C.validBorder: eff === false ? C.badBorder: C.selBorder;
     ctx.fillRect(sx, sy, sw, sh);
     ctx.lineWidth = 2;
     ctx.strokeRect(sx+1, sy+1, sw-2, sh-2);
@@ -741,7 +745,15 @@ async function startVs(gridType, seed = null, overlay = false) {
 
 function vsLoop(ts) {
   animId = null;
-  if (vsGameOver) return;
+
+  if (vsGameOver) {
+    const bounds = selBounds(dragStart, dragEnd);
+    drawBoard($('canvas-human'), vsHumanGrid, DEFAULT_ROWS, DEFAULT_COLS, VS_CELL, VS_GAP,
+      { drag: bounds, validDrag: null, paused: false });
+    drawBoard($('canvas-ai-board'), vsAiGrid, DEFAULT_ROWS, DEFAULT_COLS, VS_CELL, VS_GAP, {});
+    animId = requestAnimationFrame(vsLoop);
+    return;
+  }
 
   if (vsWaitingToStart) {
     const humanCanvas = $('canvas-human');
@@ -828,7 +840,7 @@ async function runVsAiStep() {
 
 function endVs() {
   vsGameOver = true;
-  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  if (!animId) animId = requestAnimationFrame(vsLoop);
   const h = vsHumanScore, a = vsAiScore;
   let reason, cls;
   if      (h > a) { reason = `You win!  ${h} – ${a}`;  cls = 'win'; }
@@ -850,46 +862,50 @@ function setupVsInput() {
   canvas.addEventListener('mousedown', e => {
     if (anyOverlayOpen()) return;
     if (vsWaitingToStart) { vsWaitingToStart = false; vsGameStart = performance.now(); lastAiMoveTs = performance.now() + 800; lastTs = null; return; }
-    if (vsGameOver || vsHumanOver || vsPaused) return;
+    if (vsHumanOver || vsPaused) return;
     const cell = pixelToCell(canvas, e.clientX, e.clientY, VS_CELL, VS_GAP, DEFAULT_ROWS, DEFAULT_COLS);
     if (cell) { dragStart = cell; dragEnd = cell; }
   });
   canvas.addEventListener('mousemove', e => {
-    if (!dragStart || vsGameOver || vsHumanOver || vsPaused) return;
+    if (!dragStart || vsHumanOver || vsPaused) return;
     const cell = pixelToCell(canvas, e.clientX, e.clientY, VS_CELL, VS_GAP, DEFAULT_ROWS, DEFAULT_COLS);
     if (cell) dragEnd = cell;
   });
   canvas.addEventListener('mouseup', () => {
-    if (!dragStart || vsGameOver || vsHumanOver || vsPaused) return;
-    const bounds = selBounds(dragStart, dragEnd);
-    if (bounds) {
-      const [, noMoves] = py('vs_human_apply', ...bounds);
-      if (noMoves) vsHumanOver = true;
+    if (!dragStart) return;
+    if (!vsGameOver && !vsHumanOver && !vsPaused) {
+      const bounds = selBounds(dragStart, dragEnd);
+      if (bounds) {
+        const [, noMoves] = py('vs_human_apply', ...bounds);
+        if (noMoves) vsHumanOver = true;
+      }
     }
     dragStart = null; dragEnd = null;
   });
   canvas.addEventListener('mouseleave', () => { dragStart = null; dragEnd = null; });
 
   canvas.addEventListener('touchstart', e => {
-    if (vsGameOver || vsHumanOver || vsPaused || anyOverlayOpen()) return;
+    if (vsHumanOver || vsPaused || anyOverlayOpen()) return;
     const t = e.touches[0];
     const cell = pixelToCell(canvas, t.clientX, t.clientY, VS_CELL, VS_GAP, DEFAULT_ROWS, DEFAULT_COLS);
     if (cell) { dragStart = cell; dragEnd = cell; }
     e.preventDefault();
   }, { passive: false });
   canvas.addEventListener('touchmove', e => {
-    if (!dragStart || vsGameOver || vsHumanOver || vsPaused) return;
+    if (!dragStart || vsHumanOver || vsPaused) return;
     const t = e.touches[0];
     const cell = pixelToCell(canvas, t.clientX, t.clientY, VS_CELL, VS_GAP, DEFAULT_ROWS, DEFAULT_COLS);
     if (cell) dragEnd = cell;
     e.preventDefault();
   }, { passive: false });
   canvas.addEventListener('touchend', e => {
-    if (!dragStart || vsGameOver || vsHumanOver || vsPaused) return;
-    const bounds = selBounds(dragStart, dragEnd);
-    if (bounds) {
-      const [, noMoves] = py('vs_human_apply', ...bounds);
-      if (noMoves) vsHumanOver = true;
+    if (!dragStart) return;
+    if (!vsGameOver && !vsHumanOver && !vsPaused) {
+      const bounds = selBounds(dragStart, dragEnd);
+      if (bounds) {
+        const [, noMoves] = py('vs_human_apply', ...bounds);
+        if (noMoves) vsHumanOver = true;
+      }
     }
     dragStart = null; dragEnd = null;
   });
@@ -909,7 +925,7 @@ function setupVsInput() {
   $('vs-over-again').onclick = () => $('vs-restart').onclick();
   $('vs-over-share').onclick = () => {
     const elapsed = Math.floor(DEFAULT_TIME - vsTimeRemaining);
-    const text = `I scored ${vsHumanScore} on ShroomBox vs AI in ${elapsed}s\nTry beating me here! ${location.href}`;
+    const text = `I scored ${vsHumanScore} on ShroomBox in ${elapsed}s\nTry beating me here! ${location.href}`;
     navigator.clipboard.writeText(text).then(() => {
       const btn = $('vs-over-share');
       btn.textContent = 'Copied!';
@@ -1033,10 +1049,15 @@ function updateVsAiBoardBtn() {
   $('setting-vs-ai-board').textContent = vsAiDefaultHidden ? 'HIDDEN' : 'SHOWN';
 }
 
+function updateValidHighlightBtn() {
+  $('setting-valid-highlight').textContent = showValidHighlight ? 'ON' : 'OFF';
+}
+
 function openSettings() {
   waitingForBinding = null;
   updateKeyBtns();
   updateVsAiBoardBtn();
+  updateValidHighlightBtn();
   $('settings-capture-hint').classList.add('hidden');
   openOverlay('overlay-settings');
 }
@@ -1071,6 +1092,12 @@ function setupSettingsOverlay() {
     vsAiDefaultHidden = !vsAiDefaultHidden;
     localStorage.setItem('vsAiDefaultHidden', vsAiDefaultHidden ? '1' : '0');
     updateVsAiBoardBtn();
+  });
+
+  $('setting-valid-highlight').addEventListener('click', () => {
+    showValidHighlight = !showValidHighlight;
+    localStorage.setItem('showValidHighlight', showValidHighlight ? '1' : '0');
+    updateValidHighlightBtn();
   });
 }
 
