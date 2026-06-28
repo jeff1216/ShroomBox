@@ -633,7 +633,7 @@ function setupPlayInput() {
       const bounds = selBounds(dragStart, dragEnd);
       if (bounds) {
         const [pts, noMoves] = py('play_apply', ...bounds);
-        if (pts) { playScore = py('play_score'); playGrid = py('play_grid'); }
+        if (pts) { playScore = py('play_score'); playGrid = py('play_grid'); $('play-score').textContent = playScore; }
         if (noMoves) { dragStart = null; dragEnd = null; endPlay('No more moves'); return; }
       }
     }
@@ -661,7 +661,7 @@ function setupPlayInput() {
       const bounds = selBounds(dragStart, dragEnd);
       if (bounds) {
         const [pts, noMoves] = py('play_apply', ...bounds);
-        if (pts) { playScore = py('play_score'); playGrid = py('play_grid'); }
+        if (pts) { playScore = py('play_score'); playGrid = py('play_grid'); $('play-score').textContent = playScore; }
         if (noMoves) { dragStart = null; dragEnd = null; endPlay('No more moves'); return; }
       }
     }
